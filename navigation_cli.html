@@ -431,6 +431,62 @@ chmod +t /chemin/vers/dossier_public
 chmod 1777 /chemin/vers/dossier_public</code></pre>
                     </li>
                 </ul>
+
+                <!-- NOUVELLE PARTIE UMASK -->
+                <h3 class="text-2xl font-semibold mb-3 mt-8 text-purple-800">4. Le Umask (User Mask)</h3>
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg mb-6">
+                    <p class="font-semibold text-lg">Utilité principale : Définir les permissions par défaut.</p>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Le `umask` n'est pas une permission *sur* un fichier, mais un <strong class="font-semibold text-purple-600">masque</strong> appliqué par votre session shell qui <strong class="font-semibold">retire</strong> des permissions lors de la création d'un nouveau fichier ou dossier.
+                    </p>
+                </div>
+
+                <ul class="list-disc list-inside space-y-3 text-gray-700 leading-relaxed">
+                    <li>
+                        <strong>Comprendre le calcul :</strong>
+                        <ol class="list-decimal list-inside ml-6 mt-2 space-y-1">
+                            <li>Les dossiers sont créés avec une base de `777` (<code>rwxrwxrwx</code>).</li>
+                            <li>Les fichiers sont créés avec une base de `666` (<code>rw-rw-rw-</code>) (pas d'exécution par défaut pour la sécurité).</li>
+                            <li>Le `umask` est soustrait (techniquement, c'est un `AND` binaire avec le complément) de cette base.</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>Cas d'usage courant : `umask 0022` (le plus commun)</strong>
+                        <pre class="mt-2"><code class="language-bash"># Pour un NOUVEAU DOSSIER :
+#   777 (base)
+# - 022 (umask)
+# = 755 (rwxr-xr-x)  <- Vous avez le contrôle total, les autres peuvent lire/voir.
+
+# Pour un NOUVEAU FICHIER :
+#   666 (base)
+# - 022 (umask)
+# = 644 (rw-r--r--)  <- Vous pouvez lire/écrire, les autres peuvent lire.</code></pre>
+                    </li>
+                    <li>
+                        <strong>Cas d'usage sécurisé : `umask 0077` (très privé)</strong>
+                        <pre class="mt-2"><code class="language-bash"># Pour un NOUVEAU DOSSIER :
+#   777 (base)
+# - 077 (umask)
+# = 700 (rwx------)  <- Seul vous pouvez accéder au dossier.
+
+# Pour un NOUVEAU FICHIER :
+#   666 (base)
+# - 077 (umask)
+# = 600 (rw-------)  <- Seul vous pouvez lire/écrire le fichier.</code></pre>
+                    </li>
+                    <li>
+                        <strong>Comment le gérer :</strong>
+                        <pre class="mt-2"><code class="language-bash"># Afficher le umask actuel (peut s'afficher en symbolique ou octal)
+umask
+
+# Définir le umask pour la session actuelle
+umask 0022
+
+# Pour le définir de manière permanente, modifiez des fichiers comme
+# /etc/profile, /etc/login.defs, ou ~/.bashrc</code></pre>
+                    </li>
+                </ul>
+                <!-- FIN DE LA PARTIE UMASK -->
             </section>
 
             <!-- NOUVELLE SECTION TP -->
@@ -523,6 +579,50 @@ ls -ld /projets/depot_public
 # 5. Concept :
 #    - Si 'alice' crée un fichier ici, 'bob' peut le lire (et l'écrire si 777),
 #    - mais 'bob' NE PEUT PAS le supprimer car il n'est pas le propriétaire.</code></pre>
+
+                <!-- NOUVEL EXERCICE 4 -->
+                <h3 class="text-xl font-semibold mt-6 mb-2">Exercice 4 : Gérer le Umask</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    Comprendre comment le `umask` affecte les permissions par défaut des nouveaux fichiers et dossiers.
+                </p>
+                <pre><code class="language-bash"># 1. Allez dans un répertoire de test (ex: votre dossier personnel)
+cd ~
+mkdir test_umask
+cd test_umask
+
+# 2. Affichez votre umask actuel
+umask
+# (La sortie est probablement 0022 ou 0002)
+
+# 3. Créez un fichier et un dossier avec le umask par défaut
+touch fichier_defaut.txt
+mkdir dossier_defaut
+ls -l fichier_defaut.txt  # Devrait être -rw-r--r-- (644) ou similaire
+ls -ld dossier_defaut     # Devrait être drwxr-xr-x (755) ou similaire
+
+# 4. Définissez un umask très restrictif pour la session
+umask 0077
+
+# 5. Vérifiez que le umask a changé
+umask
+# Attendu : 0077
+
+# 6. Créez un nouveau fichier et un nouveau dossier
+touch fichier_prive.txt
+mkdir dossier_prive
+
+# 7. Vérifiez les permissions (le umask 077 a été appliqué)
+ls -l fichier_prive.txt
+# Attendu : -rw------- (Base 666 - 077 = 600)
+ls -ld dossier_prive
+# Attendu : drwx------ (Base 777 - 077 = 700)
+
+# 8. Remettez le umask à sa valeur par défaut
+umask 0022
+
+# 9. (Pour info) Le umask est réinitialisé à la prochaine connexion.
+#    Vous pouvez le définir de manière permanente dans ~/.bashrc ou /etc/profile.</code></pre>
+                <!-- FIN DU NOUVEL EXERCICE 4 -->
             </section>
             <!-- FIN DE LA NOUVELLE SECTION TP -->
         </main>
