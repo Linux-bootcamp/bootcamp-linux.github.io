@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LFCS: Gestion des Fichiers et Permissions</title>
+    <!-- Chargement de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chargement de la police Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Appliquer la police Inter par défaut */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style pour les blocs de code */
+        pre {
+            background-color: #2d3748; /* bg-gray-800 */
+            color: #e2e8f0; /* text-gray-200 */
+            padding: 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            overflow-x: auto;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.9em;
+        }
+        code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+        /* Style pour les titres de section */
+        h2 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600; /* font-semibold */
+            border-bottom: 2px solid #e2e8f0; /* border-gray-300 */
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            margin-top: 2.5rem; /* mt-10 */
+        }
+        h3 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            margin-top: 2rem; /* mt-8 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        table {
+            width: 100%;
+            margin-top: 1rem;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #cbd5e0; /* border-gray-400 */
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f7fafc; /* bg-gray-50 */
+            font-weight: 600;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f7fafc; /* bg-gray-50 */
+        }
+
+        .justify-content {
+            text-align: center;
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 antialiased">
+
+    <!-- Conteneur principal -->
+    <div class="container mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+
+        <!-- En-tête -->
+        <header class="mb-8 p-6 bg-white rounded-lg shadow-md">
+            <h1 id="home-title" class="text-4xl font-bold text-blue-700 cursor-pointer transition-colors duration-200 hover:text-blue-800">LFCS: Gestion des Fichiers et Permissions</h1>
+            <p class="mt-2 text-xl text-gray-600">Maîtriser l'arborescence, la manipulation des fichiers et la gestion des droits sous Linux.</p>
+        </header>
+
+        <!-- NOUVELLE BARRE DE NAVIGATION -->
+        <div class="mb-6 flex flex-wrap -mx-1">
+            <a href="./index.html" class="nav-button flex-grow text-sm sm:text-base m-1 py-3 px-4 justify-center rounded-lg font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Accueil
+            </a>
+            <button class="nav-button flex-grow text-sm sm:text-base m-1 py-3 px-4 rounded-lg font-semibold transition-colors duration-200 bg-blue-600 text-white shadow" data-target="#fhs">
+                1. Arborescence (FHS)
+            </button>
+            <button class="nav-button flex-grow text-sm sm:text-base m-1 py-3 px-4 rounded-lg font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="#commandes">
+                2. Commandes de Base
+            </button>
+            <button class="nav-button flex-grow text-sm sm:text-base m-1 py-3 px-4 rounded-lg font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="#permissions">
+                3. Permissions
+            </button>
+            <button class="nav-button flex-grow text-sm sm:text-base m-1 py-3 px-4 rounded-lg font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="#special-perms">
+                4. Perm. Spéciales
+            </button>
+            <button class="nav-button flex-grow text-sm sm:text-base m-1 py-3 px-4 rounded-lg font-semibold transition-colors duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300" data-target="#tp">
+                5. TP Pratiques
+            </button>
+            
+        </div>
+        <!-- FIN DE LA BARRE DE NAVIGATION -->
+
+        <!-- Contenu principal -->
+        <main class="bg-white rounded-lg shadow-md p-6 sm:p-8 lg:p-10">
+
+            <!-- Section 1: L'Arborescence des Fichiers (FHS) -->
+            <!-- La première section est visible par défaut -->
+            <section id="fhs" class="tab-content">
+                <h2>Comprendre l'Arborescence (FHS)</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Le <strong class="font-semibold">Filesystem Hierarchy Standard (FHS)</strong> définit la structure des répertoires sous Linux. Comprendre cette structure est essentiel pour localiser les fichiers, les binaires et les configurations.
+                </p>
+                [Image d'un diagramme de l'arborescence des fichiers Linux]
+                <table class="min-w-full divide-y divide-gray-200 mt-6 shadow-sm rounded-lg overflow-hidden">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Répertoire</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/</code></td>
+                            <td class="px-6 py-4">La racine (root) du système de fichiers. Tout part d'ici.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/bin</code></td>
+                            <td class="px-6 py-4">Binaires essentiels pour tous les utilisateurs (ex: <code>ls</code>, <code>cp</code>, <code>mount</code>).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/sbin</code></td>
+                            <td class="px-6 py-4">Binaires système essentiels, principalement pour l'administrateur (ex: <code>fdisk</code>, <code>reboot</code>).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/etc</code></td>
+                            <td class="px-6 py-4">Fichiers de configuration spécifiques à la machine (ex: <code>/etc/passwd</code>, <code>/etc/fstab</code>).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/home</code></td>
+                            <td class="px-6 py-4">Répertoires personnels des utilisateurs (ex: <code>/home/utilisateur</code>).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/root</code></td>
+                            <td class="px-6 py-4">Répertoire personnel de l'utilisateur root.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/var</code></td>
+                            <td class="px-6 py-4">Fichiers variables, tels que les logs (<code>/var/log</code>), les spools (<code>/var/spool/mail</code>).</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/tmp</code></td>
+                            <td class="px-6 py-4">Fichiers temporaires. Souvent vidé au redémarrage.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/usr</code></td>
+                            <td class="px-6 py-4">Données utilisateur secondaires (binaires, bibliothèques, documentation). <code>/usr/bin</code>, <code>/usr/lib</code>.</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><code class="font-mono font-semibold">/mnt</code> & <code class="font-mono font-semibold">/media</code></td>
+                            <td class="px-6 py-4">Points de montage pour les systèmes de fichiers temporaires (clés USB, CD-ROMs).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 2: Commandes de Base -->
+            <!-- Les sections suivantes sont cachées par défaut -->
+            <section id="commandes" class="tab-content hidden">
+                <h2>Navigation et Manipulation de Fichiers</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Un ensemble de commandes de base vous permet d'interagir avec le système de fichiers.
+                </p>
+
+                <h3>Navigation et Information</h3>
+                <pre><code class="language-bash"># Lister les fichiers et répertoires (format long, tout afficher, taille lisible)
+ls -lha
+
+# Changer de répertoire (ex: aller dans le dossier de logs)
+cd /var/log
+
+# Revenir au répertoire précédent
+cd -
+
+# Aller au répertoire personnel
+cd
+
+# Afficher le répertoire courant (Print Working Directory)
+pwd</code></pre>
+
+                <h3>Création et Suppression</h3>
+                <pre><code class="language-bash"># Créer un fichier vide ou mettre à jour son horodatage
+touch nom_du_fichier.txt
+
+# Créer un nouveau répertoire
+mkdir mon_dossier
+
+# Créer une arborescence de répertoires
+mkdir -p projet/src/main
+
+# Supprimer un fichier (demande confirmation)
+rm fichier_a_supprimer.txt
+
+# Supprimer un fichier (forcer la suppression, sans confirmation)
+rm -f fichier_a_supprimer.txt
+
+# Supprimer un répertoire vide
+rmdir dossier_vide
+
+# Supprimer un répertoire et tout son contenu (Récursif + Forcer)
+# ATTENTION: Commande très dangereuse.
+rm -rf dossier_a_supprimer</code></pre>
+
+                <h3>Copie et Déplacement</h3>
+                <pre><code class="language-bash"># Copier un fichier
+cp source.txt destination.txt
+
+# Copier un fichier dans un répertoire
+cp mon_fichier.txt /home/utilisateur/documents/
+
+# Copier un répertoire et son contenu (Récursif)
+cp -r mon_dossier /backup/
+
+# Déplacer un fichier (sert aussi à renommer)
+mv ancien_nom.txt nouveau_nom.txt
+
+# Déplacer un fichier dans un autre répertoire
+mv mon_fichier.txt /tmp/</code></pre>
+            </section>
+
+            <!-- Section 3: Gestion des Permissions -->
+            <section id="permissions" class="tab-content hidden">
+                <h2>Gestion des Permissions et de la Propriété</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Chaque fichier et répertoire sous Linux a des permissions qui déterminent qui peut le lire, l'écrire ou l'exécuter.
+                </p>
+
+                <h3>Comprendre la sortie de <code>ls -l</code></h3>
+                <p class="text-gray-700 leading-relaxed mt-4">
+                    La commande <code>ls -l</code> affiche les permissions en détail :
+                </p>
+                <pre><code class="language-bash">-rwxr-xr-- 1 utilisateur groupe 4096 Oct 25 15:00 script.sh
+d-rwx--r-- 1 admin     admin  4096 Oct 25 14:00 dossier_prive</code></pre>
+                <p class="text-gray-700 leading-relaxed mt-4">Décomposons la première ligne :</p>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li><code class="font-mono bg-gray-200 px-2 py-1 rounded">-</code>: Type de fichier. <code class="font-mono">-</code> est un fichier régulier, <code class="font-mono">d</code> est un répertoire (directory), <code class="font-mono">l</code> est un lien symbolique.</li>
+                    <li><code class="font-mono bg-gray-200 px-2 py-1 rounded">rwx</code>: Permissions pour le <strong class="font-semibold">Propriétaire (User)</strong>. (Lire, Écrire, Exécuter)</li>
+                    <li><code class="font-mono bg-gray-200 px-2 py-1 rounded">r-x</code>: Permissions pour le <strong class="font-semibold">Groupe (Group)</strong>. (Lire, pas Écrire, Exécuter)</li>
+                    <li><code class="font-mono bg-gray-200 px-2 py-1 rounded">r--</code>: Permissions pour les <strong class="font-semibold">Autres (Others)</strong>. (Lire, pas Écrire, pas Exécuter)</li>
+                    <li><code>utilisateur</code>: Le propriétaire du fichier.</li>
+                    <li><code>groupe</code>: Le groupe propriétaire du fichier.</li>
+                </ul>
+
+                <h3>Modifier les Permissions (<code>chmod</code>)</h3>
+                <p class="text-gray-700 leading-relaxed mt-4">
+                    La commande <code>chmod</code> (change mode) modifie les permissions.
+                </p>
+                
+                <h4 class="text-xl font-semibold mt-6 mb-2">Méthode Symbolique (Relative)</h4>
+                <pre><code class="language-bash"># Ajouter (u=user, g=group, o=other, a=all)
+# (r=read, w=write, x=execute)
+
+# Ajouter l'exécution pour l'utilisateur
+chmod u+x script.sh
+
+# Retirer l'écriture pour le groupe
+chmod g-w config.txt
+
+# Définir les droits des autres à lecture seulement
+chmod o=r rapport.pdf
+
+# Ajouter la lecture pour tout le monde
+chmod a+r fichier_public.txt</code></pre>
+
+                <h4 class="text-xl font-semibold mt-6 mb-2">Méthode Octale (Absolue)</h4>
+                <p class="text-gray-700 leading-relaxed mt-4">
+                    C'est la méthode la plus rapide. Chaque permission a une valeur numérique :
+                </p>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li><code>4</code> = Lire (Read)</li>
+                    <li><code>2</code> = Écrire (Write)</li>
+                    <li><code>1</code> = Exécuter (Execute)</li>
+                </ul>
+                <p class="text-gray-700 leading-relaxed mt-2">
+                    On additionne les valeurs pour chaque catégorie (User, Group, Other).
+                </p>
+                <ul class="list-disc list-inside space-y-2 mt-4 text-gray-700">
+                    <li><code>7</code> = 4+2+1 (rwx)</li>
+                    <li><code>6</code> = 4+2 (rw-)</li>
+                    <li><code>5</code> = 4+1 (r-x)</li>
+                    <li><code>4</code> = 4 (r--)</li>
+                    <li><code>0</code> = 0 (---)</li>
+                </ul>
+
+                <pre><code class="language-bash"># Mettre les droits à rwxr-xr-x (755) - typique pour un script ou un dossier
+chmod 755 mon_script.sh
+
+# Mettre les droits à rw-r--r-- (644) - typique pour un fichier de données
+chmod 644 config.ini
+
+# Mettre les droits à rw------- (600) - typique pour un fichier privé (ex: clé SSH)
+chmod 600 ~/.ssh/id_rsa</code></pre>
+
+                <h3>Modifier la Propriété (<code>chown</code> / <code>chgrp</code>)</h3>
+                <p class="text-gray-700 leading-relaxed mt-4">
+                    La commande <code>chown</code> (change owner) modifie le propriétaire et/ou le groupe.
+                </p>
+                <pre><code class="language-bash"># Changer le propriétaire
+chown nouvel_utilisateur rapport.pdf
+
+# Changer le groupe
+chgrp nouveau_groupe rapport.pdf
+
+# Changer le propriétaire et le groupe en une seule commande
+chown utilisateur:groupe fichier.txt
+
+# Changer récursivement la propriété d'un dossier et de son contenu
+chown -R utilisateur:groupe /var/www/mon_site</code></pre>
+            </section>
+
+            <!-- Section 4: Permissions Spéciales -->
+            <section id="special-perms" class="tab-content hidden">
+                <h2>Permissions Spéciales (SUID, SGID, Sticky Bit)</h2>
+                <p class="text-gray-700 leading-relaxed mb-6">
+                    Au-delà des permissions de base (lire, écrire, exécuter), il existe trois permissions spéciales qui gèrent des scénarios avancés de sécurité et de collaboration. Elles s'appliquent en ajoutant un préfixe au mode octal (ex: `4755`) ou en utilisant des lettres (`u+s`) en mode symbolique.
+                </p>
+
+                <!-- SUID -->
+                <h3 class="text-2xl font-semibold mb-3 text-blue-800">1. SUID (Set User ID)</h3>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                    <p class="font-semibold text-lg">Utilité principale : L'élévation de privilèges contrôlée.</p>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Permet à un utilisateur d'exécuter un programme avec les permissions du <strong class="font-semibold text-red-600">propriétaire</strong> du fichier, et non avec ses propres permissions.
+                    </p>
+                </div>
+                
+                <ul class="list-disc list-inside space-y-3 text-gray-700 leading-relaxed">
+                    <li>
+                        <strong>Comment le voir :</strong> Un `s` à la place du `x` pour le propriétaire.
+                        <pre class="mt-2"><code class="language-bash">-rw<strong class="text-red-400">s</strong>r-xr-x 1 root root ... /usr/bin/passwd</code></pre>
+                        <span class="text-sm text-gray-600">(Un `S` majuscule signifie que le SUID est activé mais que le fichier n'est pas exécutable, ce qui est généralement une erreur.)</span>
+                    </li>
+                    <li>
+                        <strong>Cas d'usage concret : La commande `passwd`</strong>
+                        <ol class="list-decimal list-inside ml-6 mt-2 space-y-1">
+                            <li>Vous (utilisateur standard) voulez changer votre mot de passe.</li>
+                            <li>L'information est stockée dans `/etc/shadow`, qui appartient à `root` et que vous ne pouvez pas modifier.</li>
+                            <li>La commande `/usr/bin/passwd` appartient à `root` et a le bit SUID.</li>
+                            <li>Quand vous lancez `passwd`, le système voit le SUID et exécute la commande en tant que `root`.</li>
+                            <li>Le programme peut alors modifier `/etc/shadow` en votre nom, de manière sécurisée et limitée.</li>
+                            <li>Une fois le programme terminé, vous revenez à vos droits normaux.</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>Comment l'appliquer :</strong>
+                        <pre class="mt-2"><code class="language-bash"># Méthode Symbolique
+chmod u+s executable.bin
+
+# Méthode Octale (4 + 755)
+chmod 4755 executable.bin</code></pre>
+                    </li>
+                </ul>
+
+                <!-- SGID -->
+                <h3 class="text-2xl font-semibold mb-3 mt-8 text-green-800">2. SGID (Set Group ID)</h3>
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6">
+                    <p class="font-semibold text-lg">Utilité principale : Le partage de fichiers en équipe.</p>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        A deux effets : sur un fichier, il s'exécute avec les droits du <strong class="font-semibold text-green-600">groupe</strong>. Sur un répertoire, il force tous les nouveaux fichiers à hériter du groupe du répertoire.
+                    </p>
+                </div>
+
+                <ul class="list-disc list-inside space-y-3 text-gray-700 leading-relaxed">
+                    <li>
+                        <strong>Comment le voir :</strong> Un `s` à la place du `x` pour le groupe.
+                        <pre class="mt-2"><code class="language-bash">drwxr-<strong class="text-green-400">s</strong>--- 1 admin www-data ... /var/www/projet</code></pre>
+                    </li>
+                    <li>
+                        <strong>Cas d'usage concret (sur un répertoire) : Le dossier de projet web</strong>
+                        <ol class="list-decimal list-inside ml-6 mt-2 space-y-1">
+                            <li>Le dossier `/var/www/projet` appartient au groupe `www-data` (le serveur web).</li>
+                            <li>Les développeurs `alice` et `bob` font partie du groupe `www-data`.</li>
+                            <li><strong class="text-red-600">Problème :</strong> Quand `alice` crée un fichier, il appartient à `alice:alice`. Le serveur (`www-data`) ne peut pas le lire.</li>
+                            <li><strong class="text-green-600">Solution :</strong> On applique le SGID sur le dossier parent : `chmod g+s /var/www/projet`.</li>
+                            <li>Maintenant, quand `alice` crée `index.html`, le fichier appartient à `alice:www-data`.</li>
+                            <li>Quand `bob` crée `style.css`, il appartient à `bob:www-data`.</li>
+                            <li>Le serveur `www-data` peut lire tous les fichiers car ils appartiennent au bon groupe.</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>Comment l'appliquer :</strong>
+                        <pre class="mt-2"><code class="language-bash"># Méthode Symbolique (pour un dossier)
+chmod g+s /chemin/vers/dossier_partage
+
+# Méthode Octale (2 + 775) - Droits courants pour un dossier partagé
+chmod 2775 /chemin/vers/dossier_partage</code></pre>
+                    </li>
+                </ul>
+
+                <!-- Sticky Bit -->
+                <h3 class="text-2xl font-semibold mb-3 mt-8 text-yellow-800">3. Sticky Bit</h3>
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg mb-6">
+                    <p class="font-semibold text-lg">Utilité principale : La protection anti-suppression.</p>
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Sur un répertoire, il empêche les utilisateurs de supprimer les fichiers des autres.
+                    </p>
+                </div>
+
+                <ul class="list-disc list-inside space-y-3 text-gray-700 leading-relaxed">
+                    <li>
+                        <strong>Comment le voir :</strong> Un `t` à la place du `x` pour les autres.
+                        <pre class="mt-2"><code class="language-bash">drwxrwxrw<strong class="text-yellow-500">t</strong> 1 root root ... /tmp</code></pre>
+                    </li>
+                    <li>
+                        <strong>Cas d'usage concret : Le répertoire `/tmp`</strong>
+                        <ol class="list-decimal list-inside ml-6 mt-2 space-y-1">
+                            <li>Le dossier `/tmp` est public, tout le monde a les droits `rwx` (lire, écrire, exécuter).</li>
+                            <li><strong class="text-red-600">Problème :</strong> Sans Sticky Bit, n'importe quel utilisateur pourrait supprimer les fichiers temporaires d'un autre utilisateur ou d'un service, causant des plantages.</li>
+                            <li><strong class="text-green-600">Solution :</strong> Le Sticky Bit est activé.</li>
+                            <li>Maintenant, `alice` peut créer un fichier, `bob` peut en créer un autre.</li>
+                            <li>`alice` ne peut pas supprimer le fichier de `bob`. Seul `bob` (le propriétaire du fichier) ou `root` le peut.</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>Comment l'appliquer :</strong>
+                        <pre class="mt-2"><code class="language-bash"># Méthode Symbolique
+chmod +t /chemin/vers/dossier_public
+
+# Méthode Octale (1 + 777) - Droits typiques pour /tmp
+chmod 1777 /chemin/vers/dossier_public</code></pre>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- NOUVELLE SECTION TP -->
+            <section id="tp" class="tab-content hidden">
+                <h2>TP : Scénarios Pratiques</h2>
+                <p class="text-gray-700 leading-relaxed mb-6">
+                    Mettons en pratique les concepts de permissions et de propriété. Ouvrez un terminal et suivez ces étapes (il est préférable d'être `root` ou d'utiliser `sudo` pour créer des groupes et changer la propriété).
+                </p>
+
+                <h3 class="text-xl font-semibold mt-6 mb-2">Exercice 1 : Création et Permissions de Base</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    Créer un environnement de projet simple.
+                </p>
+                <pre><code class="language-bash"># 1. Créez un dossier de base à la racine
+sudo mkdir /projets
+
+# 2. Créez un dossier pour un projet spécifique
+sudo mkdir /projets/projet_alpha
+
+# 3. Créez un fichier de rapport
+sudo touch /projets/projet_alpha/rapport.txt
+
+# 4. Définissez des permissions saines
+#    - Le dossier projet doit être accessible (r-x) par tout le monde, mais modifiable (w) que par vous.
+sudo chmod 755 /projets/projet_alpha
+
+#    - Le rapport doit être lisible (r--) par tout le monde, mais modifiable (w) que par vous.
+sudo chmod 644 /projets/projet_alpha/rapport.txt
+
+# 5. Vérifiez votre travail
+ls -ld /projets/projet_alpha
+# Attendu : drwxr-xr-x ...
+ls -l /projets/projet_alpha/rapport.txt
+# Attendu : -rw-r--r-- ...</code></pre>
+
+                <h3 class="text-xl font-semibold mt-6 mb-2">Exercice 2 : Dossier Collaboratif (SGID)</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    Mettre en place un dossier partagé pour une équipe où tous les nouveaux fichiers appartiennent au groupe de l'équipe.
+                </p>
+                <pre><code class="language-bash"># 1. Créez un nouveau groupe pour votre équipe
+sudo groupadd devops
+
+# 2. Créez le dossier de partage
+sudo mkdir /projets/partage_devops
+
+# 3. Changez le groupe propriétaire du dossier
+sudo chgrp devops /projets/partage_devops
+
+# 4. Appliquez le SGID et les bonnes permissions
+#    - 2 = SGID (force l'héritage du groupe)
+#    - 7 = Propriétaire (rwx)
+#    - 7 = Groupe (rwx) - Important pour que l'équipe puisse travailler
+#    - 5 = Autres (r-x)
+sudo chmod 2775 /projets/partage_devops
+
+# 5. Vérifiez la permission SGID (notez le 's')
+ls -ld /projets/partage_devops
+# Attendu : drwxrwsr-x ... root devops ...
+
+# 6. Testez l'héritage (en tant qu'utilisateur qui est dans le groupe 'devops')
+#    (Ajoutez votre utilisateur au groupe : sudo usermod -aG devops $USER)
+#    (Vous devrez peut-être vous déconnecter/reconnecter)
+touch /projets/partage_devops/test.txt
+
+# 7. Vérifiez le propriétaire du nouveau fichier
+ls -l /projets/partage_devops/test.txt
+# Attendu : -rw-r--r-- ... votre_user devops ... (Le groupe est 'devops', pas votre groupe principal !)</code></pre>
+
+                <h3 class="text-xl font-semibold mt-6 mb-2">Exercice 3 : Dossier de Dépôt Public (Sticky Bit)</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    Mettre en place un dossier "public" où tout le monde peut déposer des fichiers, mais personne ne peut supprimer les fichiers des autres (comme /tmp).
+                </p>
+                <pre><code class="language-bash"># 1. Créez le dossier public
+sudo mkdir /projets/depot_public
+
+# 2. Donnez à tout le monde les droits de lecture, écriture et exécution
+sudo chmod 777 /projets/depot_public
+
+# 3. Ajoutez le Sticky Bit
+#    - 1 = Sticky Bit
+#    - 7 = Propriétaire (rwx)
+#    - 7 = Groupe (rwx)
+#    - 7 = Autres (rwx)
+sudo chmod 1777 /projets/depot_public
+
+# 4. Vérifiez les permissions (notez le 't')
+ls -ld /projets/depot_public
+# Attendu : drwxrwxrwt ...
+
+# 5. Concept :
+#    - Si 'alice' crée un fichier ici, 'bob' peut le lire (et l'écrire si 777),
+#    - mais 'bob' NE PEUT PAS le supprimer car il n'est pas le propriétaire.</code></pre>
+            </section>
+            <!-- FIN DE LA NOUVELLE SECTION TP -->
+        </main>
+
+        <!-- Pied de page -->
+        <footer class="mt-12 text-center text-sm text-gray-600">
+            <p>&copy; 2025 - Guide de préparation non-officiel pour la certification LFCS.</p>
+        </footer>
+
+    </div>
+
+    <!-- SCRIPT DE NAVIGATION PAR ONGLETS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            // Nouveaux éléments pour le bouton "Accueil"
+            const homeTitle = document.getElementById('home-title');
+            const firstNavButton = document.querySelector('.nav-button[data-target="#fhs"]');
+
+            // Styles pour le bouton actif
+            const activeClasses = ['bg-blue-600', 'text-white', 'shadow'];
+            // Styles pour le bouton inactif
+            const inactiveClasses = ['bg-gray-200', 'text-gray-700', 'hover:bg-gray-300'];
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target'); // e.g., "#fhs"
+                    
+                    // 1. Désactiver tous les boutons
+                    navButtons.forEach(btn => {
+                        btn.classList.remove(...activeClasses);
+                        btn.classList.add(...inactiveClasses);
+                    });
+
+                    // 2. Activer le bouton cliqué
+                    button.classList.add(...activeClasses);
+                    button.classList.remove(...inactiveClasses);
+
+                    // 3. Cacher tous les contenus
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+
+                    // 4. Afficher le contenu cible
+                    const targetContent = document.querySelector(targetId);
+                    if (targetContent) {
+                        targetContent.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Ajout du clic sur le titre pour revenir à l'accueil
+            if (homeTitle && firstNavButton) {
+                homeTitle.addEventListener('click', () => {
+                    // Simule un clic sur le premier bouton (Accueil / Arborescence)
+                    firstNavButton.click();
+                });
+            }
+
+            // Note : L'état initial (premier onglet actif) est déjà défini
+            // dans le HTML (le premier bouton a les classes bleues, la première section n'a pas 'hidden').
+        });
+    </script>
+    <!-- FIN DU SCRIPT -->
+
+</body>
+</html>
+
+

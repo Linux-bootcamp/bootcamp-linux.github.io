@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Interactif LFCS - Utilisateurs & Groupes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Tech Focus Blue -->
+    <!-- Application Structure Plan: Une SPA à onglets (Accueil/Concepts, Explorateur de Commandes, Lab). L'objectif est de transformer la référence statique en outil interactif. L'Explorateur de Commandes sera la pièce maîtresse, permettant aux utilisateurs de 'construire' des commandes et d'explorer les options de manière dynamique, ce qui est plus engageant pour l'apprentissage technique que de lire une liste. Le Lab est séparé pour une pratique ciblée. Cette structure sépare 'mémorisation' (Concepts), 'exploration' (Explorateur), et 'application' (Lab) pour une meilleure expérience d'apprentissage. -->
+    <!-- Visualization & Content Choices: Info: Commandes (useradd, etc.) -> Goal: Organiser/Informer -> Viz: 'Explorateur de Commandes' interactif (HTML/Tailwind) -> Interaction: Clic sur la commande pour voir les détails, survol/clic sur les options. -> Justification: L'interaction active renforce l'apprentissage. -> Method: Vanilla JS + DOM. | Info: Fichiers de Config -> Goal: Informer -> Viz: Cartes interactives (Accordion) -> Interaction: Clic pour révéler la description. -> Justification: Cache la complexité, permet un survol rapide. -> Method: Vanilla JS + DOM. | Info: Lab -> Goal: Appliquer -> Viz: Étapes numérotées claires -> Interaction: Aucune. -> Justification: Processus linéaire. -> Method: HTML/Tailwind. | Info: Points Clés -> Goal: Informer -> Viz: Liste à puces stylisée -> Interaction: Aucune. -> Justification: Résumé. -> Method: HTML/Tailwind. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code&display=swap');
+        .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+        .nav-btn {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            color: #374151;
+        }
+        .nav-btn:hover {
+            background-color: #f3f4f6;
+        }
+        .nav-btn.active-nav-btn {
+            background-color: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .cmd-group-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .cmd-group-btn:hover {
+            background-color: #d1d5db;
+        }
+        .cmd-group-btn.active-cmd-group-btn {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .cmd-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+        }
+        .cmd-btn:hover {
+            background-color: #e5e7eb;
+        }
+        .cmd-btn.active-cmd-btn {
+            background-color: #60a5fa;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .page-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page-content.active-page {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .accordion-title {
+            cursor: pointer;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        .accordion-title:hover {
+            background-color: #f3f4f6;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-top: 0;
+            border-radius: 0 0 0.5rem 0.5rem;
+            padding: 0 1rem;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+            padding: 1rem;
+        }
+        .accordion-title .icon::after {
+            content: '+';
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #6b7280;
+        }
+        .accordion-title.open .icon::after {
+            content: '−';
+        }
+        pre {
+            background-color: #111827;
+            color: #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+        }
+        pre code {
+            color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-6xl">
+        
+        <header class="mb-6 pb-4 border-b border-gray-300">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800">Guide Interactif LFCS</h1>
+            <p class="text-lg md:text-xl text-gray-600">Gestion des Utilisateurs et des Groupes</p>
+        </header>
+
+        <nav class="mb-6 flex flex-wrap gap-2 bg-white p-2 rounded-lg shadow-sm">
+            <a href="./index.html" class="nav-btn nav-btn"> Accueil </a>
+            <button data-target="page-concepts" class="nav-btn active-nav-btn">Concepts Clés</button>
+            <button data-target="page-explorer" class="nav-btn">Explorateur de Commandes</button>
+            <button data-target="page-lab" class="nav-btn">Lab Pratique</button>
+        </nav>
+
+        <main>
+            
+            
+            <section id="page-concepts" class="page-content active-page">
+                <h2 class="text-2xl md:text-3xl font-semibold mb-4 text-blue-700">Concepts Clés</h2>
+                <p class="mb-6 text-gray-700">Cette section résume les points essentiels à mémoriser pour la certification, y compris les fichiers de configuration critiques et les points de révision importants.</p>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-900">Points de Révision Clés</h3>
+                        <div id="review-points-container" class="space-y-3"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-900">Fichiers de Configuration</h3>
+                        <div id="config-files-container" class="space-y-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-explorer" class="page-content">
+                <h2 class="text-2xl md:text-3xl font-semibold mb-4 text-blue-700">Explorateur de Commandes</h2>
+                <p class="mb-6 text-gray-700">Utilisez cet outil pour explorer les commandes de gestion. Cliquez sur un groupe, puis sur une commande pour voir ses options et sa description.</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4 bg-gray-100 p-2 rounded-lg">
+                    <button data-cmd-group="utilisateurs" class="cmd-group-btn">Utilisateurs</button>
+                    <button data-cmd-group="motsdepasse" class="cmd-group-btn">Mots de Passe</button>
+                    <button data-cmd-group="groupes" class="cmd-group-btn">Groupes</button>
+                </div>
+                
+                <div id="cmd-buttons-container" class="mb-4 flex flex-wrap gap-2">
+                </div>
+
+                <div id="cmd-detail-container" class="bg-white p-6 rounded-lg shadow-md hidden">
+                </div>
+            </section>
+
+            <section id="page-lab" class="page-content">
+                <h2 class="text-2xl md:text-3xl font-semibold mb-4 text-blue-700">Lab Pratique : Scénario de Gestion</h2>
+                <div id="lab-content-container" class="bg-white p-6 rounded-lg shadow-md space-y-6"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const appData = {
+            concepts: {
+                reviewPoints: [
+                    {
+                        title: "<code>usermod -G</code> vs <code>-aG</code>",
+                        content: "<code>-G</code> <strong>remplace</strong> la liste des groupes. <code>-aG</code> <strong>ajoute</strong> à la liste existante. C'est un piège classique."
+                    },
+                    {
+                        title: "<code>userdel -r</code>",
+                        content: "L'option <code>-r</code> est cruciale. L'oublier laisse des fichiers orphelins sur le système (le répertoire personnel n'est pas supprimé)."
+                    },
+                    {
+                        title: "<code>chage</code> et <code>passwd -e</code>",
+                        content: "Maîtrisez la mise en place d'une politique d'expiration de mot de passe (<code>chage -M</code>) et comment forcer un changement au prochain login (<code>passwd -e</code>)."
+                    },
+                    {
+                        title: "<code>/etc/skel</code>",
+                        content: "Sachez comment personnaliser l'environnement par défaut (<code>.bashrc</code>, <code>.profile</code>) pour les nouveaux utilisateurs en modifiant ce répertoire."
+                    }
+                ],
+                configFiles: [
+                    {
+                        title: "/etc/passwd",
+                        content: "Stocke les informations de base des utilisateurs (nom, UID, GID principal, home, shell). Le mot de passe est masqué par un 'x'."
+                    },
+                    {
+                        title: "/etc/shadow",
+                        content: "Stocke les mots de passe chiffrés (hash) et les informations d'expiration (de <code>chage</code>). Lisible uniquement par <code>root</code>."
+                    },
+                    {
+                        title: "/etc/group",
+                        content: "Définit les groupes, leur GID, et la liste de leurs membres secondaires."
+                    },
+                    {
+                        title: "/etc/gshadow",
+                        content: "Stocke les mots de passe de groupe (rarement utilisés) et les administrateurs de groupe."
+                    },
+                    {
+                        title: "/etc/skel",
+                        content: "Répertoire 'squelette'. Son contenu est copié dans le <code>/home</code> de chaque nouvel utilisateur créé avec <code>useradd -m</code>."
+                    },
+                    {
+                        title: "/etc/login.defs",
+                        content: "Définit les valeurs par défaut pour <code>useradd</code> (plages UID/GID, politique d'expiration par défaut, etc.)."
+                    }
+                ]
+            },
+            commands: {
+                utilisateurs: {
+                    useradd: {
+                        description: "C'est la commande de base pour ajouter un nouvel utilisateur. Elle est non-interactive et conçue pour les scripts.",
+                        options: [
+                            { flag: "-m", description: "Crée le répertoire personnel (`/home/username`) de l'utilisateur." },
+                            { flag: "-s [shell]", description: "Définit le shell de connexion (ex: <code>-s /bin/bash</code>)." },
+                            { flag: "-g [groupe]", description: "Définit le groupe principal (par nom ou GID)." },
+                            { flag: "-G [groupes]", description: "Définit les groupes supplémentaires (séparés par des virgules)." },
+                            { flag: "-c \"Commentaire\"", description: "Ajoute un commentaire (souvent le nom complet)." }
+                        ],
+                        example: "useradd -m -g users -G wheel -s /bin/bash -c \"Amadou Diop\" amadou",
+                        comparison: {
+                            title: "Comparaison : `useradd` vs `adduser`",
+                            content: [
+                                {
+                                    title: "<code>useradd</code> (L'outil standard LFCS)",
+                                    items: [
+                                        "<strong>Description :</strong> Commande binaire de bas niveau, présente sur *toutes* les distributions.",
+                                        "<strong>Comportement :</strong> Non-interactif. Conçu pour les scripts.",
+                                        "<strong>Action :</strong> Vous *devez* spécifier manuellement toutes les options (<code>-m</code>, <code>-s</code>, etc.).",
+                                        "<strong>Usage :</strong> **C'est la commande à maîtriser pour la certification.**"
+                                    ]
+                                },
+                                {
+                                    title: "<code>adduser</code> (L'assistant convivial)",
+                                    items: [
+                                        "<strong>Description :</strong> Script (Debian/Ubuntu) qui utilise <code>useradd</code>.",
+                                        "<strong>Comportement :</strong> Interactif, il pose des questions.",
+                                        "<strong>Action :</strong> Automatise tout (création du home, copie de <code>/etc/skel</code>, demande de mot de passe).",
+                                        "<strong>Usage :</strong> Pratique, mais *pas* l'outil attendu à l'examen LFCS."
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    usermod: {
+                        description: "Permet de changer les attributs d'un utilisateur existant.",
+                        options: [
+                            { flag: "-aG [groupe]", description: "<strong>Ajoute</strong> l'utilisateur à un groupe. Le <code>-a</code> (append) est crucial !" },
+                            { flag: "-G [groupes]", description: "<strong>Remplace</strong> la liste des groupes secondaires par celle-ci." },
+                            { flag: "-l [nouveau_nom]", description: "Change le nom de login." },
+                            { flag: "-d [nouveau_home]", description: "Change le répertoire personnel." },
+                            { flag: "-L", description: "Verrouille (Lock) le compte de l'utilisateur." },
+                            { flag: "-U", description: "Déverrouille (Unlock) le compte." }
+                        ],
+                        example: "usermod -aG sudo amadou"
+                    },
+                    userdel: {
+                        description: "Supprime un compte utilisateur.",
+                        options: [
+                            { flag: "-r", description: "<strong>Essentiel :</strong> Supprime le répertoire personnel et la boîte mail de l'utilisateur." }
+                        ],
+                        example: "userdel -r amadou"
+                    }
+                },
+                motsdepasse: {
+                    passwd: {
+                        description: "Définit ou change le mot de passe d'un utilisateur et gère les politiques simples.",
+                        options: [
+                            { flag: "passwd [username]", description: "(En tant que <code>root</code>) Définit le mot de passe d'un autre utilisateur." },
+                            { flag: "passwd", description: "(En tant qu'utilisateur normal) Change son propre mot de passe." },
+                            { flag: "-e [username]", description: "<strong>Force l'expiration</strong> du mot de passe. L'utilisateur devra le changer à sa prochaine connexion." },
+                            { flag: "-l [username]", description: "Verrouille (Lock) le mot de passe (équivalent à <code>usermod -L</code>)." },
+                            { flag: "-u [username]", description: "Déverrouille (Unlock) le mot de passe (équivalent à <code>usermod -U</code>)." }
+                        ],
+                        example: "passwd -e fatou"
+                    },
+                    chage: {
+                        description: "Outil critique pour gérer l'expiration des mots de passe. Très souvent testé.",
+                        options: [
+                            { flag: "-l [username]", description: "<strong>Liste</strong> (List) les informations d'expiration du mot de passe." },
+                            { flag: "-M [jours]", description: "Définit le nombre <strong>Maximum</strong> de jours de validité du mot de passe." },
+                            { flag: "-m [jours]", description: "Définit le nombre <strong>minimum</strong> de jours avant de pouvoir changer le mot de passe." },
+                            { flag: "-W [jours]", description: "Définit le nombre de jours d'avertissement (<strong>Warning</strong>) avant expiration." },
+                            { flag: "-E [YYYY-MM-DD]", description: "Définit une date d'<strong>Expiration</strong> pour le compte lui-même." }
+                        ],
+                        example: "chage -M 90 -W 7 amadou"
+                    }
+                },
+                groupes: {
+                    groupadd: {
+                        description: "Crée un nouveau groupe.",
+                        options: [],
+                        example: "groupadd developpeurs"
+                    },
+                    groupmod: {
+                        description: "Modifie un groupe existant.",
+                        options: [
+                            { flag: "-n [nouveau_nom]", description: "Renomme (new name) le groupe." }
+                        ],
+                        example: "groupmod -n dev_equipe developpeurs"
+                    },
+                    groupdel: {
+                        description: "Supprime un groupe. (Ne fonctionne pas s'il s'agit du groupe principal d'un utilisateur).",
+                        options: [],
+                        example: "groupdel dev_equipe"
+                    },
+                    gpasswd: {
+                        description: "Alternative à <code>usermod</code> pour gérer la composition des groupes.",
+                        options: [
+                            { flag: "-a [username] [groupe]", description: "<strong>Ajoute</strong> (add) un utilisateur à un groupe." },
+                            { flag: "-d [username] [groupe]", description: "<strong>Supprime</strong> (delete) un utilisateur d'un groupe." }
+                        ],
+                        example: "gpasswd -a fatou developpeurs"
+                    }
+                }
+            },
+            lab: {
+                scenario: [
+                    "Vous devez intégrer deux nouveaux employés, Alioune et Bineta.",
+                    "1. Un groupe <code>equipe_dev</code> doit être créé pour les développeurs.",
+                    "2. Alioune sera administrateur junior. Il a besoin d'un accès <code>sudo</code> et son groupe principal doit être <code>equipe_dev</code>.",
+                    "3. Bineta est une développeuse standard. Son groupe principal sera <code>users</code> (ou le défaut système), mais elle doit être ajoutée au groupe <code>equipe_dev</code>.",
+                    "4. Bineta doit changer son mot de passe à sa première connexion.",
+                    "5. Le mot de passe d'Alioune doit expirer tous les 60 jours, avec un avertissement 5 jours avant."
+                ],
+                steps: [
+                    {
+                        title: "Étape 1 : Créer le groupe",
+                        code: "groupadd equipe_dev"
+                    },
+                    {
+                        title: "Étape 2 : Créer l'utilisateur Alioune",
+                        description: "(<code>-m</code> : crée le home, <code>-g</code> : groupe principal, <code>-G</code> : groupe secondaire, <code>-c</code> : commentaire). Remplacez 'sudo' par 'wheel' sur RHEL/CentOS.",
+                        code: "useradd -m -g equipe_dev -G sudo -c \"Alioune Fall\" alioune"
+                    },
+                    {
+                        title: "Étape 3 : Créer l'utilisateur Bineta",
+                        description: "(Utilise le groupe principal par défaut, <code>-G</code> pour le groupe secondaire).",
+                        code: "useradd -m -G equipe_dev -c \"Bineta Sarr\" bineta"
+                    },
+                    {
+                        title: "Étape 4 : Définir les mots de passe",
+                        description: "(Le système vous demandera de les saisir).",
+                        code: "passwd alioune\npasswd bineta"
+                    },
+                    {
+                        title: "Étape 5 : Appliquer les politiques de mot de passe",
+                        code: "# Forcer Bineta à changer son mdp à la prochaine connexion\npasswd -e bineta\n\n# Définir la politique d'expiration pour Alioune\nchage -M 60 -W 5 alioune"
+                    },
+                    {
+                        title: "Étape 6 : Vérification",
+                        code: "# Vérifier les groupes d'Alioune\nid alioune\n\n# Vérifier les groupes de Bineta\nid bineta\n\n# Vérifier la politique d'Alioune\nchage -l alioune\n\n# Vérifier la politique de Bineta\nchage -l bineta"
+                    },
+                    {
+                        title: "Étape 7 : Nettoyage (Simulation)",
+                        code: "# Supprimer Alioune et son home\nuserdel -r alioune"
+                    }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const pages = document.querySelectorAll('.page-content');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navButtons.forEach(btn => btn.classList.remove('active-nav-btn'));
+                    button.classList.add('active-nav-btn');
+                    
+                    pages.forEach(page => {
+                        if (page.id === button.dataset.target) {
+                            page.classList.add('active-page');
+                        } else {
+                            page.classList.remove('active-page');
+                        }
+                    });
+                });
+            });
+
+            function buildAccordions(containerId, items) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                items.forEach((item, index) => {
+                    const wrapper = document.createElement('div');
+                    
+                    const title = document.createElement('div');
+                    title.className = 'accordion-title';
+                    title.innerHTML = `<span class="font-mono">${item.title}</span> <span class="icon"></span>`;
+                    
+                    const content = document.createElement('div');
+                    content.className = 'accordion-content';
+                    content.innerHTML = `<div class="p-1">${item.content}</div>`;
+
+                    title.addEventListener('click', () => {
+                        title.classList.toggle('open');
+                        content.classList.toggle('open');
+                    });
+
+                    wrapper.appendChild(title);
+                    wrapper.appendChild(content);
+                    container.appendChild(wrapper);
+                });
+            }
+
+            function buildReviewPoints() {
+                const container = document.getElementById('review-points-container');
+                container.innerHTML = '';
+                appData.concepts.reviewPoints.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'border-l-4 border-blue-500 pl-4 py-2 bg-blue-50';
+                    div.innerHTML = `<h4 class="font-semibold font-mono text-gray-800">${item.title}</h4>
+                                     <p class="text-gray-700">${item.content}</p>`;
+                    container.appendChild(div);
+                });
+            }
+            
+            buildReviewPoints();
+            buildAccordions('config-files-container', appData.concepts.configFiles);
+
+            const cmdGroupButtons = document.querySelectorAll('.cmd-group-btn');
+            const cmdButtonsContainer = document.getElementById('cmd-buttons-container');
+            const cmdDetailContainer = document.getElementById('cmd-detail-container');
+
+            function loadCommandDetail(groupName, cmdId) {
+                const cmd = appData.commands[groupName][cmdId];
+                cmdDetailContainer.innerHTML = '';
+                cmdDetailContainer.classList.remove('hidden');
+
+                let optionsHtml = '';
+                if (cmd.options.length > 0) {
+                    optionsHtml = '<h4 class="text-lg font-semibold mt-4 mb-2">Options Courantes</h4><ul class="space-y-2">';
+                    cmd.options.forEach(opt => {
+                        optionsHtml += `<li class="flex items-start"><span class="font-mono bg-gray-100 text-blue-700 px-2 py-0.5 rounded mr-3">${opt.flag}</span> <span class="text-gray-700">${opt.description}</span></li>`;
+                    });
+                    optionsHtml += '</ul>';
+                }
+
+                let exampleHtml = '';
+                if (cmd.example) {
+                    exampleHtml = `<h4 class="text-lg font-semibold mt-4 mb-2">Exemple</h4><pre><code>${cmd.example}</code></pre>`;
+                }
+                
+                let comparisonHtml = '';
+                if (cmd.comparison) {
+                    comparisonHtml = `<h4 class="text-lg font-semibold mt-4 mb-2">${cmd.comparison.title}</h4><div class="grid md:grid-cols-2 gap-4">`;
+                    cmd.comparison.content.forEach(col => {
+                        comparisonHtml += `<div class="bg-gray-50 p-4 rounded-lg border">
+                                            <h5 class="font-semibold mb-2">${col.title}</h5>
+                                            <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                                                ${col.items.map(item => `<li>${item}</li>`).join('')}
+                                            </ul>
+                                          </div>`;
+                    });
+                    comparisonHtml += '</div>';
+                }
+
+                cmdDetailContainer.innerHTML = `
+                    <h3 class="text-2xl font-bold font-mono text-blue-700">${cmdId}</h3>
+                    <p class="mt-2 text-gray-700">${cmd.description}</p>
+                    ${optionsHtml}
+                    ${exampleHtml}
+                    ${comparisonHtml}
+                `;
+
+                document.querySelectorAll('.cmd-btn').forEach(btn => btn.classList.remove('active-cmd-btn'));
+                document.querySelector(`.cmd-btn[data-cmd-id="${cmdId}"]`).classList.add('active-cmd-btn');
+            }
+
+            function loadCommandGroup(groupName) {
+                cmdGroupButtons.forEach(btn => {
+                    btn.classList.toggle('active-cmd-group-btn', btn.dataset.cmdGroup === groupName);
+                });
+                
+                cmdButtonsContainer.innerHTML = '';
+                const commands = appData.commands[groupName];
+                
+                let firstCmdId = null;
+                for (const cmdId in commands) {
+                    if (!firstCmdId) firstCmdId = cmdId;
+                    const button = document.createElement('button');
+                    button.className = 'cmd-btn font-mono';
+                    button.dataset.cmdId = cmdId;
+                    button.dataset.group = groupName;
+                    button.textContent = cmdId;
+                    
+                    button.addEventListener('click', () => {
+                        loadCommandDetail(groupName, cmdId);
+                    });
+                    
+                    cmdButtonsContainer.appendChild(button);
+                }
+                
+                if (firstCmdId) {
+                    loadCommandDetail(groupName, firstCmdId);
+                } else {
+                    cmdDetailContainer.classList.add('hidden');
+                }
+            }
+            
+            cmdGroupButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    loadCommandGroup(button.dataset.cmdGroup);
+                });
+            });
+
+            loadCommandGroup('utilisateurs');
+
+            function buildLab() {
+                const container = document.getElementById('lab-content-container');
+                container.innerHTML = '';
+                
+                const scenarioDiv = document.createElement('div');
+                scenarioDiv.className = 'bg-blue-50 border-l-4 border-blue-500 p-4 rounded';
+                scenarioDiv.innerHTML = `<h3 class="text-xl font-semibold mb-2 text-blue-800">Scénario</h3>
+                                         <ul class="list-disc list-inside text-gray-700 space-y-1">
+                                            ${appData.lab.scenario.map(item => `<li>${item}</li>`).join('')}
+                                         </ul>`;
+                container.appendChild(scenarioDiv);
+                
+                const stepsDiv = document.createElement('div');
+                stepsDiv.className = 'space-y-6';
+                appData.lab.steps.forEach(step => {
+                    const stepWrapper = document.createElement('div');
+                    let descriptionHtml = step.description ? `<p class="text-gray-600 mb-2">${step.description}</p>` : '';
+                    stepWrapper.innerHTML = `
+                        <h4 class="text-lg font-semibold text-gray-900">${step.title}</h4>
+                        ${descriptionHtml}
+                        <pre><code>${step.code}</code></pre>
+                    `;
+                    stepsDiv.appendChild(stepWrapper);
+                });
+                container.appendChild(stepsDiv);
+            }
+            
+            buildLab();
+        });
+    </script>
+</body>
+</html>

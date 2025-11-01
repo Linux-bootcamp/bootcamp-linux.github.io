@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours Linux - Présentation</title>
+    <!-- Chargement de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importation de la police Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Styles personnalisés pour la présentation */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #f3f4f6; /* text-gray-100 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden; /* Empêche le défilement de la page principale */
+        }
+
+        .slide-container {
+            width: 90%;
+            max-width: 1100px; /* Largeur max de la diapositive */
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .slide {
+            background-color: #1f2937; /* bg-gray-800 */
+            border: 1px solid #374151; /* border-gray-700 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 3rem 4rem; /* p-12 ou p-16 */
+            min-height: 600px; /* Hauteur minimale pour centrer le contenu */
+            display: none; /* Caché par défaut */
+            flex-direction: column;
+            justify-content: center;
+            transition: opacity 0.4s ease-in-out;
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .slide.active {
+            display: flex; /* Affiché en flex */
+            opacity: 1;
+            position: relative; /* Position relative pour le slide actif */
+        }
+        
+        /* Styles pour le code */
+        code {
+            background-color: #374151; /* bg-gray-700 */
+            color: #e5e7eb; /* text-gray-200 */
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem; /* rounded-md */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+        }
+
+        /* Styles pour les listes */
+        ul {
+            list-style-type: disc;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        ol {
+            list-style-type: decimal;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.75rem; /* espacement entre les items */
+            font-size: 1.125rem; /* text-lg */
+            color: #d1d5db; /* text-gray-300 */
+        }
+
+        /* Boutons de navigation */
+        .nav-button {
+            background-color: #4f46e5; /* bg-indigo-600 */
+            color: white;
+            font-weight: 600; /* font-semibold */
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover {
+            background-color: #4338ca; /* hover:bg-indigo-700 */
+        }
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #374151; /* bg-gray-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <div class="slide-container">
+
+        <!-- Slide 1: Titre -->
+        <div class="slide active items-center justify-center text-center">
+            <h1 class="text-6xl font-bold text-white mb-6">Cours Linux</h1>
+            <h2 class="text-4xl font-light text-indigo-300">Concepts Fondamentaux</h2>
+            <p class="mt-8 text-2xl text-gray-400">Système de Fichiers, Utilisateurs et Groupes</p>
+        </div>
+
+        <!-- Slide 2: Sujet 1 Intro -->
+        <div class="slide">
+            <h2 class="text-4xl font-bold mb-8 text-indigo-300 border-b border-indigo-500 pb-3">Sujet 1 : Le Système de Fichiers Linux</h2>
+            <h3 class="text-3xl font-semibold mb-6 text-white">Qu'est-ce que le système de fichiers ?</h3>
+            <p class="text-2xl mb-8 text-gray-300">En bref : c'est la structure hiérarchique qui organise tous les fichiers sur votre système.</p>
+            <ul>
+                <li><strong class="text-white">Hiérarchie Unique :</strong> Tout commence à la racine, symbolisée par <code>/</code>. Il n'y a pas de <code>C:\</code> ou <code>D:\</code>.</li>
+                <li><strong class="text-white">"Tout est un fichier" :</strong> Une philosophie clé de Linux. Les documents, répertoires, disques durs, et même les périphériques sont représentés comme des fichiers.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 3: FHS Intro + Placeholder Image -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-6 text-white">La Hiérarchie des Fichiers (FHS)</h3>
+            <p class="text-xl mb-8 text-gray-300">Le <em>Filesystem Hierarchy Standard</em> (FHS) définit les répertoires principaux et leur utilité.</p>
+            
+            <!-- Placeholder pour l'image -->
+            <div class="flex items-center justify-center bg-gray-700 rounded-lg h-80 border-2 border-dashed border-gray-500 mt-4">
+                <span class="text-gray-400 text-2xl">[Image de la hiérarchie du système de fichiers Linux]</span>
+            </div>
+        </div>
+
+        <!-- Slide 4: FHS Partie 1 -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-8 text-white">La Hiérarchie des Fichiers (FHS) - Partie 1</h3>
+            <ul class="space-y-4">
+                <li><code>/</code> (Root) : Le point de départ de toute la structure.</li>
+                <li><code>/bin</code> (Binaries) : Programmes essentiels pour tous les utilisateurs (ex: <code>ls</code>, <code>cp</code>, <code>cat</code>).</li>
+                <li><code>/sbin</code> (System Binaries) : Programmes essentiels pour l'administration (ex: <code>fdisk</code>, <code>reboot</code>).</li>
+                <li><code>/etc</code> (Etcetera) : Contient <strong>tous les fichiers de configuration</strong> du système.</li>
+                <li><code>/home</code> (Maison) : Les dossiers personnels des utilisateurs (ex: <code>/home/alice</code>).</li>
+                <li><code>/root</code> : Le dossier personnel de l'utilisateur <code>root</code> (l'administrateur).</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5: FHS Partie 2 -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-8 text-white">La Hiérarchie des Fichiers (FHS) - Partie 2</h3>
+            <ul class="space-y-4">
+                <li><code>/var</code> (Variables) : Fichiers dont le contenu change souvent : logs (<code>/var/log</code>), caches, e-mails...</li>
+                <li><code>/tmp</code> (Temporary) : Fichiers temporaires. Souvent vidé au redémarrage.</li>
+                <li><code>/usr</code> (User System Resources) : La majorité des logiciels et utilitaires installés (<code>/usr/bin</code>, <code>/usr/lib</code>).</li>
+                <li><code>/dev</code> (Devices) : Fichiers représentant les périphériques (ex: <code>/dev/sda1</code> pour un disque).</li>
+                <li><code>/mnt</code> & <code>/media</code> : Points de montage pour les périphériques amovibles (clés USB).</li>
+            </ul>
+        </div>
+
+        <!-- Slide 6: Sujet 2 Intro -->
+        <div class="slide">
+            <h2 class="text-4xl font-bold mb-8 text-indigo-300 border-b border-indigo-500 pb-3">Sujet 2 : Les Utilisateurs et les Groupes</h2>
+            <h3 class="text-3xl font-semibold mb-6 text-white">Les Utilisateurs</h3>
+            <p class="text-2xl mb-8 text-gray-300">Linux est un système multi-utilisateurs. Chaque utilisateur est isolé pour des raisons de sécurité.</p>
+            <ul>
+                <li><strong class="text-white">Pourquoi ?</strong> Pour contrôler qui a le droit de faire quoi. Un utilisateur ne peut pas modifier les fichiers d'un autre (sauf permission).</li>
+            </ul>
+        </div>
+
+        <!-- Slide 7: Types d'utilisateurs -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-8 text-white">Types d'utilisateurs</h3>
+            <ol class="space-y-6">
+                <li>
+                    <strong class="text-2xl text-white"><code>root</code> (Super-utilisateur) :</strong>
+                    <ul class="list-disc pl-8 mt-3 space-y-2">
+                        <li>L'administrateur suprême. A <strong>tous les droits</strong> sur le système.</li>
+                        <li>Son UID (User ID) est <code>0</code>.</li>
+                        <li>On utilise la commande <code>sudo</code> pour exécuter des actions en tant que <code>root</code> de manière temporaire.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong class="text-2xl text-white">Utilisateurs Standards :</strong>
+                    <ul class="list-disc pl-8 mt-3 space-y-2">
+                        <li>Ceux que vous créez pour un usage quotidien (ex: <code>alice</code>).</li>
+                        <li>Leurs droits sont limités à leur dossier <code>/home</code>.</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong class="text-2xl text-white">Utilisateurs Système :</strong>
+                    <ul class="list-disc pl-8 mt-3 space-y-2">
+                        <li>Comptes créés pour faire fonctionner des services (ex: <code>www-data</code>).</li>
+                        <li>Ils n'ont pas de dossier <code>/home</code> et ne sont pas faits pour se connecter.</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <!-- Slide 8: Les Groupes -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-8 text-white">Les Groupes</h3>
+            <p class="text-2xl mb-8 text-gray-300">Un groupe est simplement un ensemble d'utilisateurs.</p>
+            <ul>
+                <li><strong class="text-white">Pourquoi ?</strong> Pour gérer les permissions de manière efficace.</li>
+                <li class="mt-4 bg-gray-700 p-4 rounded-lg">
+                    <strong class="text-white">Exemple :</strong>
+                    <p class="mt-2 text-gray-300">Au lieu de donner la permission d'accéder à un dossier "Projet" à Alice, Bob, et Carol individuellement...</p>
+                    <p class="mt-2 text-gray-300">... on crée un groupe <code>dev</code>, on y ajoute Alice, Bob et Carol, et on donne la permission au <strong>groupe</strong> <code>dev</code>.</p>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Slide 9: Groupes Types & Fichiers Config -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-8 text-white">Groupes & Fichiers Clés</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-2xl font-semibold mb-4 text-indigo-300">Groupe Primaire vs Secondaire</h4>
+                    <ul>
+                        <li><strong>Primaire :</strong> Le groupe par défaut de l'utilisateur (souvent du même nom). Les fichiers créés appartiendront à ce groupe.</li>
+                        <li><strong>Secondaire :</strong> Groupes additionnels auxquels l'utilisateur appartient (ex: <code>sudo</code>, <code>dev</code>, <code>audio</code>).</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-2xl font-semibold mb-4 text-indigo-300">Fichiers de Configuration Clés</h4>
+                    <ul class="space-y-3">
+                        <li><code>/etc/passwd</code> : Liste des utilisateurs, UID, GID, <code>/home</code>, shell. <strong class="text-red-400">*Sans* les mots de passe.</strong></li>
+                        <li><code>/etc/shadow</code> : Contient les mots de passe <strong>chiffrés</strong>. Seul <code>root</code> peut lire ce fichier.</li>
+                        <li><code>/etc/group</code> : Liste des groupes et de leurs membres.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Commandes Utiles -->
+        <div class="slide">
+            <h3 class="text-3xl font-semibold mb-8 text-white">Commandes Utiles</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 text-xl">
+                <p class="col-span-1"><code class="text-lg">whoami</code></p>
+                <p class="col-span-1 text-gray-300">Affiche qui vous êtes.</p>
+
+                <p class="col-span-1"><code class="text-lg">id</code></p>
+                <p class="col-span-1 text-gray-300">Montre votre UID, GID et vos groupes.</p>
+
+                <p class="col-span-1"><code class="text-lg">sudo [commande]</code></p>
+                <p class="col-span-1 text-gray-300">Exécute une commande en tant que <code>root</code>.</p>
+
+                <p class="col-span-1"><code class="text-lg">useradd / adduser</code></p>
+                <p class="col-span-1 text-gray-300">Ajoute un utilisateur.</p>
+
+                <p class="col-span-1"><code class="text-lg">usermod</code></p>
+                <p class="col-span-1 text-gray-300">Modifie un utilisateur (ex: l'ajouter à un groupe).</p>
+
+                <p class="col-span-1"><code class="text-lg">userdel</code></p>
+                <p class="col-span-1 text-gray-300">Supprime un utilisateur.</p>
+
+                <p class="col-span-1"><code class="text-lg">passwd</code></p>
+                <p class="col-span-1 text-gray-300">Change votre mot de passe.</p>
+            </div>
+        </div>
+
+        <!-- Slide 11: Fin -->
+        <div class="slide items-center justify-center text-center">
+            <h2 class="text-6xl font-bold text-white mb-8">Questions ?</h2>
+            <p class="text-3xl text-gray-300">Fin de la présentation.</p>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="fixed bottom-8 w-full px-10 flex justify-between items-center">
+        <!-- Compteur de slides -->
+        <div id="slideCounter" class="text-gray-400 text-lg font-medium"></div>
+        
+        <!-- Boutons -->
+        <div class="flex space-x-4">
+            <button id="prevBtn" class="nav-button">
+                Précédent
+            </button>
+            <button id="nextBtn" class="nav-button">
+                Suivant
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const slideCounter = document.getElementById('slideCounter');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                // Cache toutes les slides
+                slides.forEach((slide, i) => {
+                    if (i === index) {
+                        // Affiche la slide active
+                        slide.classList.add('active');
+                    } else {
+                        // Cache les autres slides
+                        slide.classList.remove('active');
+                    }
+                });
+
+                // Met à jour le compteur
+                slideCounter.textContent = `Diapositive ${index + 1} / ${slides.length}`;
+
+                // Met à jour l'état des boutons
+                prevBtn.disabled = index === 0;
+                nextBtn.disabled = index === slides.length - 1;
+            }
+
+            // Événement clic bouton Suivant
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            });
+
+            // Événement clic bouton Précédent
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            });
+
+            // Navigation au clavier (flèches droite et gauche)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' && !nextBtn.disabled) {
+                    nextBtn.click();
+                } else if (e.key === 'ArrowLeft' && !prevBtn.disabled) {
+                    prevBtn.click();
+                }
+            });
+
+            // Affichage initial de la première slide
+            showSlide(currentSlide);
+        });
+    </script>
+
+</body>
+</html>

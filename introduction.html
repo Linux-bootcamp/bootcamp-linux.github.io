@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootcamp : Préparation à la Certification LFCS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrollbars from presentation layout */
+        }
+        .slide {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+        .slide-content {
+            text-align: center;
+        }
+        .list-disc li {
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="presentation-container relative w-screen h-screen">
+
+        
+        <!-- Diapositive 1 : Titre -->
+        <div id="slide-1" class="slide active bg-gray-800 text-white flex-col items-center justify-center p-8">
+            <div class="slide-content">
+                <h1 class="text-5xl md:text-6xl font-bold mb-4">Bootcamp : Préparation à la Certification LFCS</h1>
+                <h2 class="text-3xl md:text-4xl font-semibold text-sky-400 mb-8">Devenez un Administrateur Système Linux Certifié</h2>
+                <p class="text-xl text-gray-300">Présenté par : <span class="font-semibold">Mouhamadou Moustapha CAMARA</span></p>
+            </div>
+        </div>
+
+        <!-- Diapositive 2 : Votre Formateur -->
+        <div id="slide-2" class="slide flex-col items-center justify-center p-8 bg-white">
+            <div class="slide-content max-w-3xl">
+                <h2 class="text-4xl font-bold mb-6">Votre Formateur</h2>
+                <h3 class="text-3xl font-semibold text-sky-600 mb-6">Mouhamadou Moustapha CAMARA</h3>
+                <ul class="list-disc list-inside text-xl space-y-3 mx-auto max-w-2xl">
+                    <li>Architecte Logiciel & Consultant en Transformation Numérique</li>
+                    <li>Passionné de <strong>DevOps & Sécurité</strong></li>
+                    <li><strong>+10 ans d'expérience</strong> en développement d'applications</li>
+                    <li>Formateur DevOps</li>
+                </ul>
+                <h4 class="text-2xl font-semibold mt-8 mb-4">Certifications Clés :</h4>
+                <div class="flex justify-center space-x-6 text-lg">
+                    <span class="bg-gray-200 text-gray-800 px-4 py-2 rounded-full">Kubernetes (CKA / KCNA)</span>
+                    <span class="bg-gray-200 text-gray-800 px-4 py-2 rounded-full">ITIL Foundation v3</span>
+                    <span class="bg-gray-200 text-gray-800 px-4 py-2 rounded-full">Cisco Network Security</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositive 3 : Pourquoi ce Bootcamp ? -->
+        <div id="slide-3" class="slide flex-col items-center justify-center p-8 bg-sky-700 text-white">
+            <div class="slide-content max-w-4xl">
+                <h2 class="text-4xl font-bold mb-6">L'Objectif Principal</h2>
+                <p class="text-2xl mb-8">À la fin de ces 8 semaines, vous serez capable d'<strong>administrer un système Linux de manière autonome</strong>.</p>
+                <ul class="space-y-4 text-xl list-none md:list-disc list-inside">
+                    <li><strong>Configurer et sécuriser</strong> utilisateurs, réseaux, services et stockage.</li>
+                    <li><strong>Automatiser</strong> des tâches via des scripts shell.</li>
+                    <li><strong>Déployer</strong> des services avec la virtualisation et les conteneurs (Docker).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Diapositive 4 : À qui s'adresse cette formation ? -->
+        <div id="slide-4" class="slide flex-col items-center justify-center p-8 bg-white">
+            <div class="slide-content max-w-3xl">
+                <h2 class="text-4xl font-bold mb-6">À qui s'adresse cette formation ?</h2>
+                <p class="text-xl mb-6">Ce programme est conçu pour :</p>
+                <ul class="list-disc list-inside text-xl space-y-3 mx-auto max-w-md">
+                    <li><strong>Administrateurs Système</strong> (ou futurs admins)</li>
+                    <li><strong>Développeurs</strong> (Software Developers)</li>
+                    <li><strong>Ingénieurs</strong> Réseau, Cloud, et QA (Testing)</li>
+                    <li><strong>Étudiants et professionnels</strong> visant la certification LFCS.</li>
+                </ul>
+                <p class="mt-8 bg-sky-100 text-sky-800 p-4 rounded-lg text-lg"><strong>Prérequis :</strong> Une connaissance de base en administration système est un plus, mais la motivation est votre meilleur atout !</p>
+            </div>
+        </div>
+
+        <!-- Diapositive 5 : Structure du Bootcamp -->
+        <div id="slide-5" class="slide flex-col items-center justify-center p-8 bg-gray-800 text-white">
+            <div class="slide-content">
+                <h2 class="text-4xl font-bold mb-6">Un format pensé pour vous</h2>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="bg-gray-700 p-6 rounded-lg">
+                        <p class="text-4xl font-bold text-sky-400">24</p>
+                        <p class="text-xl">Heures totales</p>
+                    </div>
+                    <div class="bg-gray-700 p-6 rounded-lg">
+                        <p class="text-4xl font-bold text-sky-400">8</p>
+                        <p class="text-xl">Semaines</p>
+                    </div>
+                    <div class="bg-gray-700 p-6 rounded-lg">
+                        <p class="text-4xl font-bold text-sky-400">3h</p>
+                        <p class="text-xl">Par semaine</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-xl text-gray-300">Un apprentissage progressif qui s'intègre facilement à votre emploi du temps.</p>
+            </div>
+        </div>
+
+        <!-- Diapositive 6 : Une Méthodologie Axée sur la Pratique -->
+        <div id="slide-6" class="slide flex-col items-center justify-center p-8 bg-white">
+            <div class="slide-content max-w-3xl">
+                <h2 class="text-4xl font-bold mb-8">Une Méthodologie Axée sur la Pratique</h2>
+                <div class="space-y-6">
+                    <div class="bg-sky-100 p-6 rounded-lg text-left">
+                        <h3 class="text-2xl font-bold text-sky-800">50% Pratique / Laboratoires (11-12h)</h3>
+                        <p class="text-lg text-sky-700 italic">Le cœur de la formation. Mettez en pratique chaque concept.</p>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-lg text-left">
+                        <h3 class="text-2xl font-bold text-gray-800">30% Théorie (6-7h)</h3>
+                        <p class="text-lg text-gray-600 italic">Des bases solides pour comprendre le "pourquoi".</p>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-lg text-left">
+                        <h3 class="text-2xl font-bold text-gray-800">20% Quiz & Évaluations (4-5h)</h3>
+                        <p class="text-lg text-gray-600 italic">Validez vos acquis chaque semaine.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositive 7 : Le Programme - Semaines 1 à 4 -->
+        <div id="slide-7" class="slide flex-col items-center justify-center p-8 bg-gray-200">
+            <div class="slide-content max-w-4xl">
+                <h2 class="text-4xl font-bold mb-6">Le Programme - Première Partie</h2>
+                <div class="grid md:grid-cols-2 gap-6 text-left">
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 0 : Introduction & Installation</strong><p class="text-gray-600">Mise en place de votre environnement de travail (VM).</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 1 : L'Essentiel de la Ligne de Commande</strong><p class="text-gray-600">Maîtrisez la navigation et la manipulation de fichiers en CLI.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 2 : Gestion des Utilisateurs & Permissions</strong><p class="text-gray-600">Créez, gérez et sécurisez les accès.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 3 : Processus & Services</strong><p class="text-gray-600">Supervisez et contrôlez les services avec `systemd` et `cron`.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow col-span-2 text-center"><strong>Semaine 4 : Stockage & Systèmes de Fichiers</strong><p class="text-gray-600">Gérez disques, partitions et la puissance de LVM.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositive 8 : Le Programme - Semaines 5 à 8 -->
+        <div id="slide-8" class="slide flex-col items-center justify-center p-8 bg-gray-200">
+             <div class="slide-content max-w-4xl">
+                <h2 class="text-4xl font-bold mb-6">Le Programme - Seconde Partie</h2>
+                <div class="grid md:grid-cols-2 gap-6 text-left">
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 5 : Réseaux & Sécurité</strong><p class="text-gray-600">Configurez une IP statique et un pare-feu (`firewalld`).</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 6 : Administration Avancée & Scripting</strong><p class="text-gray-600">Automatisez vos tâches pour devenir plus efficace.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 7 : Virtualisation & Conteneurs</strong><p class="text-gray-600">Déployez un serveur web Nginx avec Docker.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><strong>Semaine 8 : Révision & Simulation d'Examen</strong><p class="text-gray-600">Entraînez-vous en conditions réelles !</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapositive 9 : Le Défi Final : Simulation d'Examen -->
+        <div id="slide-9" class="slide flex-col items-center justify-center p-8 bg-sky-700 text-white">
+            <div class="slide-content max-w-4xl">
+                <h2 class="text-4xl font-bold mb-6">Le Défi Final : Simulation d'Examen</h2>
+                <p class="text-2xl mb-6">La dernière semaine est dédiée à une <strong>simulation d'examen blanc de 3 heures</strong>.</p>
+                <h3 class="text-xl font-semibold mb-4">Exemples de scénarios :</h3>
+                <ol class="list-decimal list-inside text-lg space-y-2 text-left mx-auto max-w-2xl">
+                    <li><strong>Sécurité :</strong> Créer et sécuriser un utilisateur avec un accès SSH restreint.</li>
+                    <li><strong>Stockage :</strong> Configurer un volume LVM et automatiser son montage.</li>
+                    <li><strong>Déploiement :</strong> Déployer un serveur web sécurisé avec un pare-feu configuré.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Diapositive 10 : Conclusion -->
+        <div id="slide-10" class="slide flex-col items-center justify-center p-8 bg-white">
+            <div class="slide-content max-w-3xl">
+                <h2 class="text-4xl font-bold mb-6">Ce que vous aurez accompli</h2>
+                <ul class="space-y-4 text-xl">
+                    <li class="bg-green-100 text-green-800 p-4 rounded-lg">Une <strong>maîtrise pratique</strong> de l'administration système Linux.</li>
+                    <li class="bg-green-100 text-green-800 p-4 rounded-lg">La <strong>confiance</strong> et les <strong>compétences</strong> pour passer l'examen LFCS.</li>
+                    <li class="bg-green-100 text-green-800 p-4 rounded-lg">Un <strong>avantage concurrentiel</strong> sur le marché du travail.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Diapositive 11 : Environnement de Travail -->
+        <div id="slide-11" class="slide flex-col items-center justify-center p-8 bg-white">
+            <div class="slide-content max-w-3xl">
+                <h2 class="text-4xl font-bold mb-6">Préparation de l'Environnement</h2>
+                <p class="text-xl mb-6">Pour les travaux pratiques, chaque participant mettra en place son propre laboratoire virtuel.</p>
+                <ul class="list-disc list-inside text-xl space-y-3 mx-auto max-w-2xl text-left">
+                    <li><strong>Logiciel de Virtualisation :</strong> Nous utiliserons un logiciel comme <span class="font-semibold text-sky-700">VirtualBox</span> (gratuit) ou VMware.</li>
+                    <li><strong>Système d'exploitation :</strong> Installation d'une distribution Linux standard pour les serveurs : <span class="font-semibold text-sky-700">Ubuntu Server</span> ou <span class="font-semibold text-sky-700">CentOS Stream</span>.</li>
+                    <li><strong>Accès à distance :</strong> Configuration de l'accès <span class="font-semibold text-sky-700">SSH</span> pour administrer votre machine virtuelle depuis votre terminal.</li>
+                </ul>
+                 <p class="mt-8 bg-sky-100 text-sky-800 p-4 rounded-lg text-lg">C'est votre bac à sable personnel pour expérimenter sans risque !</p>
+            </div>
+        </div>
+
+        <!-- Diapositive 12 : Questions & Réponses -->
+        <div id="slide-12" class="slide flex-col items-center justify-center p-8 bg-gray-800 text-white">
+            <div class="slide-content">
+                <h2 class="text-5xl font-bold mb-8">Questions & Réponses</h2>
+                <p class="text-3xl">Merci de votre attention !</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 w-full flex justify-between items-center p-4 bg-gray-900 bg-opacity-50 text-white">
+        <a href="./index.html" id="frontpage" class="px-6 py-2 bg-sky-600 rounded-lg hover:bg-sky-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"> < </a>
+    </div>
+    <!-- Navigation -->
+    <div class="fixed bottom-0 left-0 w-full flex justify-between items-center p-4 bg-gray-900 bg-opacity-50 text-white">
+        <button id="prevBtn" class="px-6 py-2 bg-sky-600 rounded-lg hover:bg-sky-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Précédent</button>
+        <div id="slide-counter" class="text-lg font-semibold"></div>
+        <button id="nextBtn" class="px-6 py-2 bg-sky-600 rounded-lg hover:bg-sky-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Suivant</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const slideCounter = document.getElementById('slide-counter');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                // Hide all slides
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('active');
+                });
+
+                // Show the target slide
+                if (slides[index]) {
+                    slides[index].classList.add('active');
+                }
+                
+                // Update counter
+                slideCounter.textContent = `Diapositive ${index + 1} / ${slides.length}`;
+
+                // Update button states
+                prevBtn.disabled = index === 0;
+                nextBtn.disabled = index === slides.length - 1;
+            }
+
+            function next() {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                }
+            }
+
+            function prev() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            }
+
+            nextBtn.addEventListener('click', next);
+            prevBtn.addEventListener('click', prev);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowRight') {
+                    next();
+                } else if (event.key === 'ArrowLeft') {
+                    prev();
+                }
+            });
+
+            // Initial setup
+            showSlide(currentSlide);
+        });
+    </script>
+</body>
+</html>
+
+
+
