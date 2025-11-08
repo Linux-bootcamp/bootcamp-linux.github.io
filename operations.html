@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide d'étude LFCS - Déploiement et Opérations</title>
+    <!-- Chargement de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuration de Tailwind pour la police Inter -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Style pour les listes */
+        .content-section ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+        }
+        .content-section ol {
+            list-style-type: decimal;
+            margin-left: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <!-- Conteneur principal -->
+    <div class="container mx-auto max-w-4xl p-4 sm:p-8">
+
+        <!-- En-tête -->
+        <header class="mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Guide d'étude LFCS : Déploiement et Opérations</h1>
+            <p class="text-lg text-gray-600">Ce document est basé sur le programme LFCS, couvrant les compétences essentielles pour le déploiement, la gestion et la maintenance d'un système Linux.</p>
+        </header>
+
+        <!-- Menu de Navigation -->
+        <nav class="bg-white shadow-lg rounded-xl overflow-hidden mb-8 p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-3">Accès Rapide aux Sections</h3>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <li><a href="#section1" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 1: Commandes Base</a></li>
+                <li><a href="#section2" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 2: Cmds Avancées</a></li>
+                <li><a href="#section3" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 3: Redémarrage</a></li>
+                <li><a href="#section4" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 4: Journaux</a></li>
+                <li><a href="#section5" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 5: Planification</a></li>
+                <li><a href="#section6" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 6: Supervision</a></li>
+                <li><a href="#section7" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 7: Paramètres Noyau</a></li>
+                <li><a href="#section8" class="block p-3 bg-gray-50 rounded-lg text-blue-700 font-medium hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150">Section 8: SELinux</a></li>
+                <li><a href="#section9" class="block p-3 bg-green-50 rounded-lg text-green-700 font-medium hover:bg-green-100 hover:text-green-800 transition-colors duration-150 col-span-1 sm:col-span-2 md:col-span-1">Section 9: TPs</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- SECTION 1: Commandes de Base (Introduction) -->
+            <section id="section1" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 1 – Commandes de Base (Introduction)</h2>
+                <div class="p-6 content-section">
+                    <p class="text-gray-600 italic text-sm mb-4">Cette section est inspirée par l'introduction aux commandes Linux de Stéphane Robert.</p>
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Se familiariser avec la navigation dans l'arborescence des fichiers.</li>
+                        <li>Maîtriser la création, la suppression, la copie et le déplacement de fichiers et de répertoires.</li>
+                        <li>Savoir afficher le contenu des fichiers de manière sécurisée.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+                    
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. Navigation dans les répertoires</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">pwd</code>: (Print Working Directory) Affiche le chemin complet du répertoire où vous vous trouvez.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cd [chemin]</code>: (Change Directory) Change de répertoire.
+                            <ul>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cd /var/log</code>: Va au répertoire `/var/log` (chemin absolu).</li>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cd ..</code>: Remonte au répertoire parent.</li>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cd ~</code> ou `cd`: Retourne à votre répertoire personnel.</li>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cd -</code>: Retourne au répertoire précédent.</li>
+                            </ul>
+                        </li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls [options]</code>: (List) Liste le contenu d'un répertoire.
+                            <ul>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -l</code>: Affiche un format "long" (permissions, propriétaire, taille...).</li>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -a</code>: Affiche "tous" (all) les fichiers, y compris les fichiers cachés (commençant par un `.`).</li>
+                                <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -lh</code>: Format long et "humainement" lisible (taille en Ko, Mo, Go).</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. Gestion des fichiers et répertoires</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">mkdir [nom]</code>: (Make Directory) Crée un nouveau répertoire.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">mkdir -p A/B/C</code>: Crée les répertoires parents (`-p`) s'ils n'existent pas.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">rmdir [nom]</code>: (Remove Directory) Supprime un répertoire *vide*.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">touch [fichier]</code>: Crée un fichier vide ou met à jour sa date de modification.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cp [source] [destination]</code>: (Copy) Copie un fichier ou un répertoire.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cp -r [dossier] [destination]</code>: Copie un répertoire de manière récursive.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">mv [source] [destination]</code>: (Move) Déplace un fichier/répertoire, ou le renomme.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">rm [fichier]</code>: (Remove) Supprime un fichier. <span class="text-red-600 font-bold">Attention, il n'y a pas de corbeille !</span></li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">rm -r [dossier]</code>: Supprime un répertoire et tout son contenu (récursif). <span class="text-red-600 font-bold">À utiliser avec une extrême prudence.</span></li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. Consultation de fichiers</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cat [fichier]</code>: (Concatenate) Affiche le contenu *complet* d'un fichier. Mauvaise idée pour les gros fichiers.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">less [fichier]</code>: Affiche le contenu d'un fichier page par page (permet de naviguer avec les flèches, `q` pour quitter). C'est la méthode la plus sûre.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">head [fichier]</code>: Affiche les 10 premières lignes.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">tail [fichier]</code>: Affiche les 10 dernières lignes.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">tail -f [fichier]</code>: Affiche la fin du fichier et suit les ajouts en temps réel (très utile pour les logs).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Lister les fichiers de log :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -lh /var/log</code></li>
+                        <li><strong>Créer une arborescence de projet :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">mkdir -p ~/projets/site_web/images</code></li>
+                        <li><strong>Faire une copie de sauvegarde d'un fichier de configuration :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak</code></li>
+                        <li><strong>Renommer un fichier :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">mv rapport_v1.txt rapport_final.txt</code></li>
+                        <li><strong>Consulter un fichier de log :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">less /var/log/syslog</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 2: Commandes Avancées -->
+            <section id="section2" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 2 – Commandes Avancées</h2>
+                <div class="p-6 content-section">
+                    <p class="text-gray-600 italic text-sm mb-4">Cette section s'inspire des thèmes avancés pour les administrateurs système.</p>
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Maîtriser la recherche de fichiers avec `find`.</li>
+                        <li>Filtrer et manipuler des flux de texte avec `grep`, `awk` et `sed`.</li>
+                        <li>Gérer les utilisateurs, les groupes et les permissions `sudo`.</li>
+                        <li>Diagnostiquer les problèmes réseau de base.</li>
+                        <li>Gérer les permissions fines avec les ACLs (Access Control Lists).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+                    
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. Recherche Avancée (`find`, `grep`)</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">find /etc -name "*.conf"</code>: Trouve tous les fichiers se terminant par `.conf` dans `/etc`.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">find / -type f -mtime -7</code>: Trouve les <span class="font-bold">f</span>ichiers (`-type f`) modifiés il y a <span class="font-bold">m</span>oins de 7 jours (`-mtime -7`).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">find / -type f -size +100M</code>: Trouve les fichiers de plus de 100 Mo.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">grep -r "192.168.1.1" /etc/</code>: Recherche <span class="font-bold">r</span>écursivement la chaîne "192.168.1.1" dans `/etc`.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. Manipulation de Texte (`sed`, `awk`)</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sed 's/ancien/nouveau/g' fichier.txt</code>: Remplace "ancien" par "nouveau" dans un fichier.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">awk '{print $1}' fichier.txt</code>: Affiche uniquement la première colonne (séparée par des espaces) d'un fichier.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -l | awk '$5 > 1024'</code>: (Pipe) N'affiche que les fichiers (`ls -l`) dont la 5ème colonne (taille) est supérieure à 1024.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. Gestion des Utilisateurs et `sudo`</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo useradd -m -s /bin/bash nom_user</code>: Ajoute un utilisateur, crée son `/home` (`-m`) et définit son shell.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo usermod -aG sudo nom_user</code>: Ajoute l'utilisateur au groupe `sudo` (`-aG` pour Append to Group).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo userdel -r nom_user</code>: Supprime l'utilisateur et son répertoire personnel (`-r`).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo visudo</code>: Ouvre l'éditeur sécurisé pour le fichier `/etc/sudoers`.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">4. Permissions Avancées (ACL)</h4>
+                    <p class="text-gray-700 my-2">Les ACLs (Access Control Lists) permettent de donner des permissions à des utilisateurs spécifiques sans les ajouter au groupe propriétaire.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">getfacl fichier.txt</code>: Affiche les permissions ACL d'un fichier.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">setfacl -m u:bob:rw fichier.txt</code>: Donne à l'utilisateur `bob` les droits `rw` sur le fichier.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">setfacl -x u:bob fichier.txt</code>: Supprime les permissions ACL pour `bob`.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">5. Outils Réseau (`ip`, `ss`)</h4>
+                    <p class="text-gray-700 my-2">Ces commandes remplacent les anciens `ifconfig` et `netstat`.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ip addr show</code> (ou `ip a`): Affiche les adresses IP.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ip route show</code> (ou `ip r`): Affiche la table de routage.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ss -tunlp</code>: Affiche les sockets (`-t` TCP, `-u` UDP, `-n` numérique, `-l` listening, `-p` processus).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Afficher les ports ouverts :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo ss -tunlp</code></li>
+                        <li><strong>Trouver tous les fichiers de plus de 50Mo dans `/home` :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">find /home -type f -size +50M</code></li>
+                        <li><strong>Extraire les utilisateurs du fichier passwd :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">cat /etc/passwd | awk -F: '{print $1}'</code> (Utilise `-F:` pour définir le délimiteur à `:`).</li>
+                        <li><strong>Donner à 'alice' l'accès à un dossier projet :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo setfacl -m u:alice:rwx /srv/projet/</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Redémarrage et arrêt du système -->
+            <section id="section3" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 3 – Redémarrage et arrêt du système</h2>
+                <div class="p-6 content-section">
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Comprendre la différence entre un arrêt immédiat et un arrêt planifié.</li>
+                        <li>Maîtriser les commandes `systemctl` pour la gestion moderne de l'alimentation.</li>
+                        <li>Savoir utiliser `shutdown` pour planifier des arrêts en toute sécurité et avertir les utilisateurs.</li>
+                        <li>Gérer les annulations et les redémarrages forcés.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+                    
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. La méthode moderne : `systemctl`</h4>
+                    <p class="text-gray-700 my-2">Depuis l'avènement de `systemd`, les commandes `systemctl` sont le moyen privilégié pour un contrôle direct et immédiat de l'état du système. Elles sont directes et n'envoient pas d'avertissement aux utilisateurs.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">systemctl reboot</code>: Redémarre le système immédiatement.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">systemctl poweroff</code>: Éteint le système et coupe l'alimentation.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">systemctl halt</code>: Arrête le système mais ne coupe pas nécessairement l'alimentation (moins courant aujourd'hui).</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. La méthode traditionnelle et planifiée : `shutdown`</h4>
+                    <p class="text-gray-700 my-2">La commande `shutdown` est la méthode la plus sûre pour un serveur en production. Elle permet de planifier l'arrêt et, surtout, d'envoyer un message "wall" (un message à tous les terminaux) pour avertir les utilisateurs connectés de sauvegarder leur travail.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">shutdown [OPTIONS] TEMPS [MESSAGE]</code>: Syntaxe de base.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">shutdown -r 02:00</code>: Planifie un <span class="font-bold">r</span>edémarrage (reboot) à 2h00 du matin.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">shutdown -h +15</code>: Planifie un arrêt (<span class="font-bold">h</span>alt/poweroff) dans 15 minutes.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo shutdown -r +1 'Redémarrage planifié pour mise à jour kernel'</code>: Planifie un redémarrage dans 1 minute et envoie le message à tous les utilisateurs.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">shutdown -c</code>: <span class="font-bold">C</span>ancelle un `shutdown` planifié.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">shutdown now</code>: Équivalent de `systemctl poweroff` (mais envoie quand même un avertissement).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Planifier un redémarrage dans 10 minutes :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo shutdown -r +10 "Mise à jour du noyau"</code></li>
+                        <li><strong>Arrêt immédiat (méthode moderne) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo systemctl poweroff</code></li>
+                        <li><strong>Annuler un arrêt ou redémarrage planifié :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo shutdown -c</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Gestion des journaux et surveillance -->
+            <section id="section4" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 4 – Gestion des journaux et surveillance</h2>
+                <div class="p-6 content-section">
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Comprendre la différence entre les logs `rsyslog` (texte) et le `journald` (binaire).</li>
+                        <li>Savoir interroger le journal `systemd` avec `journalctl`.</li>
+                        <li>Filtrer les journaux par service, priorité (gravité) et plage horaire.</li>
+                        <li>Utiliser les commandes `last` et `lastlog` pour l'audit des connexions.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. `rsyslog` vs `journald`</h4>
+                    <p class="text-gray-700 my-2">
+                        <strong>`rsyslog` (et `syslog-ng`) :</strong> C'est le système de logging traditionnel. Il écrit des messages en texte brut dans des fichiers, généralement dans `/var/log/` (ex: `/var/log/syslog`, `/var/log/auth.log`). Il est facile à lire avec `cat`, `grep`, `tail`.
+                        <br>
+                        <strong>`journald` (de `systemd`) :</strong> C'est le système de logging moderne. Il capture les logs de `systemd`, du noyau, et des services dans un journal binaire, structuré et centralisé (généralement dans `/run/log/journal/` ou `/var/log/journal/`). On ne peut le lire qu'avec `journalctl`.
+                    </p>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. Interroger avec `journalctl`</h4>
+                    <p class="text-gray-700 my-2">`journalctl` est l'outil puissant pour filtrer le journal binaire.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl</code>: Affiche tout le journal (le plus récent en bas).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -r</code>: Affiche en ordre <span class="font-bold">r</span>everse (le plus récent en haut).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -f</code>: Suit les logs en temps réel (<span class="font-bold">f</span>ollow).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -u ssh.service</code>: Filtre par <span class="font-bold">u</span>nité (service).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -p err</code>: Filtre par <span class="font-bold">p</span>riorité. `err` (ou `3`) affiche les niveaux `err`, `crit`, `alert`, `emerg`.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -S "01:00" -U "02:00"</code>: Filtre par plage horaire (<span class="font-bold">S</span>ince, <span class="font-bold">U</span>ntil).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -S "1 hour ago"</code>: Utilise un temps relatif.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl _PID=1234</code>: Filtre par champ (ici, le PID).</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. Logs d'audit : `last` et `lastlog`</h4>
+                    <p class="text-gray-700 my-2">Ces commandes lisent des bases de données binaires spéciales pour l'audit des connexions.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">last</code>: Lit `/var/log/wtmp` pour afficher l'historique de toutes les connexions (utilisateurs, tty, heure de début, heure de fin).</li>
+                        <li><code class="font-mono text-sm bg-gamma-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">lastlog</code>: Lit `/var/log/lastlog` pour afficher la *dernière* connexion de *chaque* utilisateur du système.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">lastb</code>: (Souvent besoin de `sudo`) Lit `/var/log/btmp` pour afficher les tentatives de connexion <span class="font-bold">b</span>âclées (échouées).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Suivre les logs en temps réel (comme `tail -f`) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -f</code></li>
+                        <li><strong>Voir les 20 derniers logs du noyau :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -k -n 20</code></li>
+                        <li><strong>Logs d'erreur du service 'cron' :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -u cron.service -p err</code></li>
+                        <li><strong>Voir les 5 dernières tentatives de connexion échouées :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo lastb -n 5</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Planification des tâches -->
+            <section id="section5" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 5 – Planification des tâches</h2>
+                <div class="p-6 content-section">
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Comprendre la différence entre `cron` (serveur), `anacron` (desktop) et `at` (tâche unique).</li>
+                        <li>Savoir lire et écrire une ligne `crontab`.</li>
+                        <li>Gérer les `crontabs` utilisateur (`crontab -e`) et les `crontabs` système (`/etc/cron.d/`).</li>
+                        <li>Planifier, visualiser et supprimer des tâches uniques avec `at`.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. `cron` : Tâches récurrentes (serveur)</h4>
+                    <p class="text-gray-700 my-2">Le démon `cron` se réveille chaque minute et vérifie s'il y a des tâches à exécuter. Il est parfait pour les serveurs qui tournent 24/7. Si le serveur est éteint à l'heure prévue, la tâche est manquée.</p>
+                    <p class="text-gray-700 my-2"><strong>Syntaxe Crontab :</strong></p>
+                    <pre class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto text-sm mt-2"><code># m   h   dom mon dow   commande
+# ┬   ┬   ┬   ┬   ┬
+# │   │   │   │   │
+# │   │   │   │   └─── Jour de la semaine (0-7, 0 et 7=Dimanche)
+# │   │   │   └─────── Mois (1-12)
+# │   │   └────────── Jour du mois (1-31)
+# │   └───────────── Heure (0-23)
+# └───────────────── Minute (0-59)
+#
+# Exemple : Tous les jours à 3h30 du matin
+# 30  3   * * * /chemin/vers/script.sh
+#
+# Exemple : Le 1er de chaque mois à minuit (00:00)
+# 0   0   1   * * /bin/backup_database</code></pre>
+                    <ul class="space-y-2 mt-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">crontab -e</code>: <span class="font-bold">É</span>dite la crontab de l'utilisateur courant (stockée dans `/var/spool/cron/crontabs/`).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">crontab -l</code>: <span class="font-bold">L</span>iste la crontab de l'utilisateur.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">/etc/cron.d/</code>, <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">/etc/cron.hourly/</code>, etc. : Répertoires pour les tâches *système*. Les fichiers dans `cron.d` nécessitent un utilisateur (ex: `0 0 * * * root /script`).</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. `anacron` : Tâches récurrentes (desktop)</h4>
+                    <p class="text-gray-700 my-2">`anacron` est conçu pour les machines non-serveurs (laptops, desktops). Il vérifie au démarrage si des tâches (`daily`, `weekly`, `monthly`) ont été manquées et les exécute si nécessaire. Il est configuré dans `/etc/anacrontab`.</p>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. `at` : Tâche unique</h4>
+                    <p class="text-gray-700 my-2">La commande `at` est utilisée pour exécuter une commande *une seule fois* dans le futur. Elle dépend du service `atd`.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">at '15:00'</code> ou `at 'now + 10 minutes'`: Ouvre un prompt interactif. Tapez vos commandes, puis `Ctrl+D` pour valider.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">echo "reboot" | at '04:00'</code>: Planifie une commande non-interactivement.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">atq</code>: Affiche la file d'attente (`queue`) des tâches `at`.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">atrm [job_id]</code>: Supprime (`rm`) une tâche `at` de la file.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Tâche Cron (tous les dimanches à 4h05) :</strong> Dans `crontab -e`, ajoutez :<br><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">5 4 * * 0 /root/scripts/backup.sh</code></li>
+                        <li><strong>Planifier un redémarrage ce soir à 22h00 :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">echo "reboot" | at 22:00</code></li>
+                        <li><strong>Voir les tâches 'at' en attente :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">atq</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 6: Supervision des ressources et intégrité -->
+            <section id="section6" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 6 – Supervision des ressources et intégrité</h2>
+                <div class="p-6 content-section">
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Différencier `df` (utilisation par partition) et `du` (utilisation par répertoire).</li>
+                        <li>Analyser l'utilisation de la mémoire (RAM et Swap) avec `free`.</li>
+                        <li>Comprendre la "charge système" (load average) avec `uptime`.</li>
+                        <li>Connaître les commandes de vérification d'intégrité (`fsck`, `xfs_repair`) et leurs précautions.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. Espace Disque : `df` vs `du`</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">df -h</code>: (Disk Free) Affiche l'utilisation par *système de fichiers* (partition). `-h` pour <span class="font-bold">h</span>umainement lisible (Mo, Go). C'est la première commande à taper si on suspecte un disque plein.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">df -i</code>: Affiche l'utilisation des <span class="font-bold">i</span>nodes (un disque peut être "plein" s'il n'y a plus d'inodes, même s'il reste de l'espace).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">du -sh /usr/</code>: (Disk Usage) Calcule l'espace utilisé par un *répertoire*. `-s` pour <span class="font-bold">s</span>ummary (total) et `-h` pour <span class="font-bold">h</span>umain. `du` est lent car il doit lire tous les sous-dossiers.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. Mémoire : `free`</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">free -h</code>: Affiche l'état de la RAM et du Swap.
+                            <ul>
+                                <li><strong>total:</strong> RAM totale.</li>
+                                <li><strong>used:</strong> RAM activement utilisée par les programmes.</li>
+                                <li><strong>free:</strong> RAM totalement inutilisée (ceci est souvent bas sur Linux, c'est normal !).</li>
+                                <li><strong>buff/cache:</strong> RAM utilisée par le noyau pour le cache disque. C'est de la "bonne" utilisation.</li>
+                                <li><strong>available:</strong> La "vraie" mémoire disponible pour de nouvelles applications (combine `free` + `cache` récupérable).</li>
+                                <li><strong>Swap:</strong> Mémoire virtuelle sur le disque dur. Si `used` est élevé, le système est lent.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. Charge Système : `uptime` et CPU</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">uptime</code>: Affiche le temps de fonctionnement, le nombre d'utilisateurs, et la "load average" (charge moyenne).
+                            <ul>
+                                <li>`load average: 0.10, 0.45, 1.05` : Ce sont les charges moyennes sur 1, 5, et 15 minutes.</li>
+                                <li><strong>Interprétation :</strong> Sur un système à 1 cœur (CPU), un load de 1.00 signifie 100% d'utilisation. Sur un système à 4 cœurs, un load de 4.00 signifie 100% d'utilisation.</li>
+                            </ul>
+                        </li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">lscpu</code>: Liste les informations détaillées sur le(s) CPU (nombre de cœurs, sockets, etc.).</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">4. Intégrité des systèmes de fichiers</h4>
+                    <p class="text-gray-700 my-2 text-red-600 font-bold">ATTENTION : Ne JAMAIS exécuter `fsck` ou `xfs_repair` sur un système de fichiers monté. Cela causera une corruption massive des données.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo fsck.ext4 -p /dev/sda1</code>: (File System Check) Pour `ext4`. Doit être exécuté sur une partition <span class="font-bold">démontée</span>. L'option `-p` tente une réparation automatique non-interactive.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo xfs_repair -v /dev/sdb1</code>: Outil équivalent pour le système de fichiers `XFS`.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Vérifier l'espace disque (lisible) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">df -h</code></li>
+                        <li><strong>Vérifier l'utilisation des inodes :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">df -i</code></li>
+                        <li><strong>Taille totale du répertoire `/var/log` :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo du -sh /var/log</code></li>
+                        <li><strong>Mémoire disponible (la vraie) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">free -h</code> (Regarder la colonne 'available')</li>
+                        <li><strong>Charge CPU et temps de fonctionnement :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">uptime</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 7: Paramètres du noyau (sysctl) -->
+            <section id="section7" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 7 – Paramètres du noyau (sysctl)</h2>
+                <div class="p-6 content-section">
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Comprendre que `sysctl` modifie les paramètres du noyau Linux *à chaud* (runtime).</li>
+                        <li>Savoir lire et écrire des paramètres temporairement.</li>
+                        <li>Savoir rendre un paramètre permanent en créant un fichier `.conf` dans `/etc/sysctl.d/`.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. Le système de fichiers `/proc/sys`</h4>
+                    <p class="text-gray-700 my-2">Le noyau Linux expose ses paramètres modifiables dans le système de fichiers virtuel `/proc/sys/`. Par exemple, le paramètre `vm.swappiness` (agressivité du swap) est contrôlé par le fichier `/proc/sys/vm/swappiness`.</p>
+                    <p class="text-gray-700 my-2">`sysctl` est simplement une interface plus propre pour lire et écrire dans ces fichiers.</p>
+                    
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. Modification temporaire (runtime)</h4>
+                    <p class="text-gray-700 my-2">Ces changements sont actifs immédiatement, mais seront perdus au prochain redémarrage.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sysctl -a</code>: Affiche <span class="font-bold">t</span>ous (all) les paramètres.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sysctl vm.swappiness</code> (ou `cat /proc/sys/vm/swappiness`): Lit la valeur actuelle.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo sysctl -w vm.swappiness=20</code>: Écrit (<span class="font-bold">w</span>rite) la nouvelle valeur (temporairement).</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. Modification permanente (Persistance)</h4>
+                    <p class="text-gray-700 my-2">Au démarrage, `systemd-sysctl.service` lit tous les fichiers `.conf` dans `/etc/sysctl.d/` et applique leur contenu.</p>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo vim /etc/sysctl.d/99-custom.conf</code>: Crée un fichier de configuration (le `99-` assure qu'il est lu en dernier et écrase les défauts).</li>
+                        <li><strong>Contenu du fichier :</strong> `vm.swappiness = 20` (Notez la syntaxe : `.` devient `=` et les `/` deviennent `.`).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo sysctl -p /etc/sysctl.d/99-custom.conf</code>: Applique (<span class="font-bold">p</span>our "load") les paramètres du fichier *maintenant*, sans avoir à redémarrer.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Autoriser le "forwarding" IP (pour un routeur) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo sysctl -w net.ipv4.ip_forward=1</code></li>
+                        <li><strong>Rendre ce paramètre permanent :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">echo "net.ipv4.ip_forward = 1" | sudo tee /etc/sysctl.d/99-forward.conf</code></li>
+                        <li><strong>Recharger tous les fichiers de conf système :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo sysctl --system</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 8: Sécurité : SELinux -->
+            <section id="section8" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-blue-600 p-4">Section 8 – Sécurité : SELinux</h2>
+                <div class="p-6 content-section">
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4 mb-3 border-b pb-2">Objectifs Pédagogiques</h3>
+                    <ul class="space-y-2">
+                        <li>Comprendre la différence entre le Contrôle d'Accès Discrétionnaire (DAC) et Obligatoire (MAC).</li>
+                        <li>Comprendre le concept de "contexte" SELinux, en particulier le `type`.</li>
+                        <li>Savoir visualiser les contextes des fichiers (`ls -Z`) et des processus (`ps -Z`).</li>
+                        <li>Comprendre les 3 modes de SELinux (Enforcing, Permissive, Disabled).</li>
+                        <li>Savoir corriger les contextes de fichiers (`chcon`, `restorecon`).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Concepts et Commandes Clés</h3>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">1. DAC vs MAC</h4>
+                    <ul class="space-y-2">
+                        <li><strong>DAC (Discretionary Access Control) :</strong> Ce sont les permissions Linux standard (`rwx`, `chmod`, `chown`). Le "discrétionnaire" signifie que le *propriétaire* d'un fichier décide qui y a accès.</li>
+                        <li><strong>MAC (Mandatory Access Control) :</strong> C'est ce que fait SELinux. Une *politique* (policy) globale définie par l'administrateur système (et non le propriétaire du fichier) détermine les accès. Un processus (ex: Apache) ne peut accéder qu'aux fichiers ayant le bon "label", même si les permissions `rwx` le permettent.</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">2. Le Contexte SELinux</h4>
+                    <p class="text-gray-700 my-2">Tout (fichier, processus, port) a une étiquette (label) de sécurité. Format : `user:role:type:level`.
+                    <br><strong>Le 99% du temps, seul le `type` importe.</strong></p>
+                    <p class="text-gray-700 my-2">Exemple : Le processus Apache (`httpd_t`) veut lire un fichier. La politique dit : `httpd_t` peut lire `httpd_sys_content_t`. Si le fichier a ce type, c'est OK. S'il a le type `user_home_t`, l'accès est bloqué.</p>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">3. Les 3 Modes SELinux</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">getenforce</code>: Affiche le mode actuel.</li>
+                        <li><strong>Enforcing :</strong> (Mode par défaut) Bloque les violations ET les logue (`/var/log/audit/audit.log`).</li>
+                        <li><strong>Permissive :</strong> (Mode de dépannage) Ne bloque RIEN, mais logue les violations. Très utile pour tester une politique.</li>
+                        <li><strong>Disabled :</strong> Totalement désactivé (nécessite un redémarrage pour (dés)activer).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo setenforce 0</code>: Passe en mode Permissive (temporairement).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo setenforce 1</code>: Passe en mode Enforcing (temporairement).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sestatus</code>: Donne un état complet (mode, politique chargée, etc.).</li>
+                    </ul>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mt-4">4. Visualiser et Corriger les Contextes</h4>
+                    <ul class="space-y-2">
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -Z /var/www/html</code>: Affiche le contexte des fichiers.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ps -Z | grep httpd</code>: Affiche le contexte des processus.</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo chcon -t httpd_sys_content_t /tmp/index.html</code>: (<span class="font-bold">Ch</span>ange <span class="font-bold">Con</span>text) Modifie le type (temporairement, sera perdu si le système est ré-étiqueté).</li>
+                        <li><code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo restorecon -v /var/www/html/index.html</code>: (<span class="font-bold">Restore Con</span>text) C'est la *meilleure* commande. Elle lit la politique de base pour savoir quel contexte le fichier *devrait* avoir, et l'applique.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">Exemples d'application</h3>
+                    <ul class="space-y-2">
+                        <li><strong>Passer en mode permissif (pour dépannage) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo setenforce 0</code></li>
+                        <li><strong>Revener en mode "enforcing" :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo setenforce 1</code></li>
+                        <li><strong>Vérifier le contexte d'un fichier :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ls -Z /etc/shadow</code></li>
+                        <li><strong>Restaurer le contexte par défaut de `/etc/shadow` (après une mauvaise manip) :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo restorecon -v /etc/shadow</code></li>
+                        <li><strong>Voir le contexte des processus Apache :</strong> <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">ps -Z | grep httpd</code></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 9: Travaux Pratiques (TPs) Intégrés -->
+            <section id="section9" class="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
+                <h2 class="text-2xl font-semibold text-white bg-green-600 p-4">Section 9 – Travaux Pratiques (TPs) Intégrés</h2>
+                <div class="p-6 content-section">
+                    <p class="text-gray-700 mb-4">Cette section regroupe des exercices pratiques qui combinent plusieurs concepts vus dans le guide. Essayez de les réaliser dans l'ordre.</p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">TP 1 : Planification d'une Tâche (Section 5)</h3>
+                    <p class="text-gray-700 mb-2"><strong>Objectif :</strong> Planifier un script de sauvegarde (fourni) pour une exécution quotidienne avec `cron`.</p>
+                    <ol class="space-y-3">
+                        <li>
+                            <strong>1. Enregistrer le script :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Créez le répertoire nécessaire : `sudo mkdir -p /root/scripts`</li>
+                                <li>Créez le fichier : `sudo vim /root/scripts/backup_etc.sh`</li>
+                                <li>Collez-y le contenu suivant (ce script sauvegarde `/etc` et supprime les backups de plus de 7 jours) :
+<pre class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto text-sm mt-2"><code>#!/bin/bash
+BACKUP_DIR="/opt/backups/etc"
+FILENAME="etc_backup_$(date +%Y-%m-%d).tar.gz"
+mkdir -p "$BACKUP_DIR"
+tar -czf "$BACKUP_DIR/$FILENAME" /etc
+find "$BACKUP_DIR" -name "etc_backup_*.tar.gz" -mtime +7 -exec rm {} \;
+</code></pre>
+                                </li>
+                                <li>Rendez le script exécutable : `sudo chmod +x /root/scripts/backup_etc.sh`</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>2. Planifier le script (le cœur de l'exercice) :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Créez le fichier `/root/scripts/backup_etc.sh` (créez le dossier si besoin).</li>
+                                <li>Ajoutez le contenu suivant :
+<pre class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto text-sm mt-2"><code>#!/bin/bash
+# Script de sauvegarde pour /etc
+BACKUP_DIR="/opt/backups/etc"
+FILENAME="etc_backup_$(date +%Y-%m-%d).tar.gz"
+mkdir -p "$BACKUP_DIR"
+tar -czf "$BACKUP_DIR/$FILENAME" /etc
+# Bonus : Suppression des backups de plus de 7 jours
+find "$BACKUP_DIR" -name "etc_backup_*.tar.gz" -mtime +7 -exec rm {} \;
+</code></pre>
+                                </li>
+                                <li>Rendez le script exécutable : `sudo chmod +x /root/scripts/backup_etc.sh`</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Planifier le script :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Ouvrez la crontab de l'utilisateur `root` : `sudo crontab -e`</li>
+                                <li>Ajoutez une ligne pour l'exécuter tous les jours à 2h30 du matin :<br>
+                                <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">30 2 * * * /root/scripts/backup_etc.sh</code></li>
+                                <li>Vérifiez que la tâche est installée : `sudo crontab -l`</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">TP 2 : Analyse de Logs et Supervision (Sections 4 & 6)</h3>
+                    <p class="text-gray-700 mb-2"><strong>Objectif :</strong> Enquêter sur un problème de performance et d'espace disque.</p>
+                    <ol class="space-y-3">
+                        <li><strong>Diagnostic Espace Disque :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Exécutez `df -h`. Si une partition (ex: `/var`) est pleine.</li>
+                                <li>Trouvez les 5 plus gros répertoires dans `/var` :<br>
+                                <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo du -sh /var/* | sort -rh | head -n 5</code></li>
+                                <li>Vous identifiez que `/var/log` est le coupable.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Diagnostic Logs :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Trouvez les 10 plus gros fichiers dans `/var/log` : <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">sudo find /var/log -type f -exec du -h {} + | sort -rh | head -n 10</code></li>
+                                <li>Vous trouvez un fichier `debug.log` de 10 Go.</li>
+                                <li>Utilisez `journalctl` pour trouver des erreurs système récentes :<br>
+                                <code class="font-mono text-sm bg-gray-100 text-pink-600 px-2 py-0.5 rounded border border-gray-300">journalctl -p err -S "1 hour ago"</code></li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <h3 class="text-xl font-semibold text-gray-700 mt-6 mb-3 border-b pb-2">TP 3 : Dépannage SELinux (Section 8)</h3>
+                    <p class="text-gray-700 mb-2"><strong>Objectif :</strong> Corriger un problème de contexte SELinux sur un serveur web Apache.</p>
+                    <ol class="space-y-3">
+                        <li><strong>Créer le problème :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Assurez-vous qu'Apache est installé (`httpd`) et que SELinux est en mode `Enforcing`.</li>
+                                <li>Créez un fichier de test : `echo "Page de test" | sudo tee /tmp/test.html`</li>
+                                <li>Déplacez-le dans le répertoire web : `sudo mv /tmp/test.html /var/www/html/`</li>
+                                <li>Vérifiez le contexte : `ls -Z /var/www/html/test.html`. Il sera `tmp_t` ou `user_tmp_t`, ce qui est incorrect.</li>
+                                <li>Essayez d'accéder à `http://localhost/test.html` (vous obtiendrez une erreur 403 Forbidden).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Diagnostiquer et Corriger :</strong>
+                            <ul class="mt-1 space-y-1">
+                                <li>Passez SELinux en mode permissif : `sudo setenforce 0`.</li>
+                                <li>Actualisez la page web. Elle fonctionne ! Cela confirme que SELinux est le problème.</li>
+                                <li>Remettez SELinux en mode "enforcing" : `sudo setenforce 1`.</li>
+                                <li>Corrigez le contexte : `sudo restorecon -v /var/www/html/test.html`</li>
+                                <li>Vérifiez à nouveau le contexte : `ls -Z /var/www/html/test.html` (Il doit être `httpd_sys_content_t`).</li>
+                                <li>Actualisez la page web. Elle fonctionne, même avec SELinux actif.</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+</body>
+</html>
