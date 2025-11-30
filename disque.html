@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux : Stockage & LVM (Avancé)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+            scroll-behavior: smooth; /* Défilement fluide pour le menu */
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        
+        h3 {
+            letter-spacing: -0.025em;
+        }
+        
+        p {
+            color: #94a3b8; /* slate-400 */
+        }
+
+        /* Ajustement pour le scroll anchor à cause du header sticky */
+        section {
+            scroll-margin-top: 140px;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-lg h-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fa-brands fa-linux text-yellow-400 text-3xl"></i>
+                <h1 class="text-xl font-bold text-white tracking-tight">Admin Linux <span class="text-blue-400">::</span> Stockage & LVM <span class="text-xs bg-blue-600 px-2 py-0.5 rounded text-white ml-2">Master Class</span></h1>
+            </div>
+            <div class="text-sm text-slate-400 hidden sm:block">Guide complet et détaillé</div>
+        </div>
+    </header>
+
+    <!-- Navigation Menu (NEW) -->
+    <nav class="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-16 z-40 overflow-x-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <ul class="flex space-x-6 text-xs font-bold text-slate-400 whitespace-nowrap py-3">
+                <li>
+                    <a href="/" class="hover:text-blue-400 transition flex items-center gap-1"> Accueil </a>
+                </li>
+                <li class="border-l border-slate-600 pl-6 flex gap-4"><a href="#id-nomen" class="hover:text-blue-400 transition flex items-center gap-1"><span class="bg-blue-900/50 text-blue-400 px-1.5 rounded">1</span> Info & ls -l</a></li>
+                <li><a href="#id-part" class="hover:text-purple-400 transition flex items-center gap-1"><span class="bg-purple-900/50 text-purple-400 px-1.5 rounded">2</span> Partition</a></li>
+                <li><a href="#id-fs" class="hover:text-indigo-400 transition flex items-center gap-1"><span class="bg-indigo-900/50 text-indigo-400 px-1.5 rounded">3</span> FS Types</a></li>
+                <li><a href="#id-mount" class="hover:text-green-400 transition flex items-center gap-1"><span class="bg-green-900/50 text-green-400 px-1.5 rounded">4</span> Montage</a></li>
+                <li><a href="#id-lvm" class="hover:text-pink-400 transition flex items-center gap-1"><span class="bg-pink-900/50 text-pink-400 px-1.5 rounded">5</span> LVM</a></li>
+                <li><a href="#id-fix" class="hover:text-red-400 transition flex items-center gap-1"><i class="fa-solid fa-wrench"></i> Dépannage</a></li>
+                <li class="border-l border-slate-600 pl-6 flex gap-4">
+                    <a href="#tp1" class="hover:text-gray-300 transition text-gray-500">TP1: Disque</a>
+                    <a href="#tp2" class="hover:text-cyan-400 transition text-cyan-600">TP2: NAS</a>
+                    <a href="#tp3" class="hover:text-indigo-400 transition text-indigo-600">TP3: SMB</a>
+                    <a href="#tp4" class="hover:text-yellow-400 transition text-yellow-600">TP4: LVM</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-12">
+
+        <!-- Intro Text -->
+        <section class="max-w-4xl">
+            <h2 class="text-3xl font-bold text-white mb-4">Philosophie du Stockage Linux</h2>
+            <p class="text-lg text-slate-300">
+                Contrairement à Windows qui utilise des lettres de lecteur (C:, D:), Linux traite tout périphérique comme un fichier (situé dans <code>/dev</code>) et unifie l'espace de stockage dans une arborescence unique via le mécanisme de <strong>montage</strong>. Cette approche permet une flexibilité totale : un dossier profond dans l'arborescence peut physiquement résider sur un disque dur à l'autre bout du monde.
+            </p>
+        </section>
+
+        <!-- 1. Nomenclature & Identification -->
+        <section id="id-nomen">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-blue-500 flex items-center justify-center text-white font-bold">1</div>
+                <h2 class="text-2xl font-bold text-white">Identification & Permissions</h2>
+            </div>
+            
+            <p class="mb-6 max-w-3xl">
+                La première étape de l'administration est de repérer le matériel. Le noyau Linux assigne des noms aux disques dans l'ordre de leur détection au démarrage.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card: Naming -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-blue-300 mb-4"><i class="fa-solid fa-hard-drive mr-2"></i>Comprendre les Noms de Périphériques</h3>
+                    <p class="text-sm mb-4">
+                        Les noms de fichiers spéciaux dans <code>/dev</code> suivent une logique historique mais stricte. Savoir les lire permet d'identifier immédiatement le type de matériel.
+                    </p>
+                    <ul class="space-y-4 text-sm">
+                        <li class="border-b border-slate-700 pb-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-white">SATA / SCSI / USB</span>
+                                <span class="code-font bg-slate-800 px-2 py-1 rounded text-green-400">/dev/sd[a-z]</span>
+                            </div>
+                            <p class="text-xs">Le 's' signifiait à l'origine SCSI. Aujourd'hui, presque tout stockage bloc standard utilise ce préfixe. La lettre (a, b, c) indique l'ordre physique.</p>
+                        </li>
+                        <li class="border-b border-slate-700 pb-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-white">NVMe (SSD Rapide)</span>
+                                <span class="code-font bg-slate-800 px-2 py-1 rounded text-purple-400">/dev/nvme0n1</span>
+                            </div>
+                            <p class="text-xs">Les disques NVMe se connectent directement au bus PCIe, contournant les contrôleurs SATA lents. <code>nvme0</code> est le contrôleur, <code>n1</code> est le namespace (disque).</p>
+                        </li>
+                        <li class="pb-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-white">Virtuel (KVM/VirtIO)</span>
+                                <span class="code-font bg-slate-800 px-2 py-1 rounded text-yellow-400">/dev/vda</span>
+                            </div>
+                            <p class="text-xs">Dans le Cloud ou sur des VM, les pilotes paravirtuels utilisent le préfixe 'v' pour indiquer qu'il ne s'agit pas d'un disque physique réel.</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Card: LS -L Analysis (NEW) -->
+                <div class="glass-panel rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-orange-400 mb-4"><i class="fa-solid fa-list-ul mr-2"></i>Décrypter "ls -l"</h3>
+                    <p class="text-sm text-slate-400 mb-3">La première lettre de la ligne de permission indique le type de fichier. C'est crucial pour distinguer un disque d'un dossier.</p>
+                    
+                    <div class="space-y-4 font-mono text-xs">
+                        <!-- Block Device -->
+                        <div class="bg-slate-900 p-2 rounded border-l-4 border-purple-500">
+                            <div class="text-purple-300 font-bold mb-1">Périphérique Bloc (Disque)</div>
+                            <div class="text-white"><span class="text-red-400 font-bold">b</span>rw-rw---- 1 root disk ... /dev/sda</div>
+                            <div class="text-slate-500 mt-1">b = Block device (Stockage)</div>
+                        </div>
+
+                        <!-- Directory -->
+                        <div class="bg-slate-900 p-2 rounded border-l-4 border-blue-500">
+                            <div class="text-blue-300 font-bold mb-1">Dossier (Point de montage)</div>
+                            <div class="text-white"><span class="text-blue-400 font-bold">d</span>rwxr-xr-x 2 root root ... /mnt/data</div>
+                            <div class="text-slate-500 mt-1">d = Directory (Répertoire)</div>
+                        </div>
+
+                        <!-- Permissions -->
+                        <div class="bg-slate-900 p-2 rounded border-l-4 border-green-500">
+                            <div class="text-green-300 font-bold mb-1">Permissions (rwx)</div>
+                            <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                <span><strong class="text-white">r</strong>ead (4)</span>
+                                <span><strong class="text-white">w</strong>rite (2)</span>
+                                <span>e<strong class="text-white">x</strong>ecute (1)</span>
+                            </div>
+                            <div class="mt-2 text-slate-300">
+                                drwx<span class="text-yellow-500">r-x</span><span class="text-red-400">r-x</span>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>Proprio</span>
+                                <span class="text-yellow-600">Groupe</span>
+                                <span class="text-red-800">Autres</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Commands -->
+                <div class="glass-panel rounded-xl p-6 flex flex-col md:col-span-2">
+                    <h3 class="text-lg font-semibold text-green-300 mb-4"><i class="fa-solid fa-terminal mr-2"></i>Outils d'Analyse</h3>
+                    <p class="text-sm mb-4">Ne modifiez jamais un disque sans l'avoir analysé avec ces commandes.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1 font-bold">
+                                <span>Arborescence (lsblk)</span>
+                                <span class="text-green-500">Vue Hiérarchique</span>
+                            </div>
+                            <div class="bg-slate-900 rounded-md p-3 code-font border-l-4 border-green-500 text-sm">$ lsblk</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1 font-bold">
+                                <span>Identification Unique (blkid)</span>
+                                <span class="text-yellow-500">Pour fstab</span>
+                            </div>
+                            <div class="bg-slate-900 rounded-md p-3 code-font border-l-4 border-yellow-500 text-sm"># blkid</div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-1 font-bold">
+                                <span>Occupation Espace (df)</span>
+                                <span class="text-purple-500">Monitoring</span>
+                            </div>
+                            <div class="bg-slate-900 rounded-md p-3 code-font border-l-4 border-purple-500 text-sm">$ df -hT</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Partitionnement Avancé -->
+        <section id="id-part">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-purple-500 flex items-center justify-center text-white font-bold">2</div>
+                <h2 class="text-2xl font-bold text-white">Partitionnement (fdisk/gdisk)</h2>
+            </div>
+            
+            <p class="mb-6 max-w-3xl">
+                Le disque brut est inutilisable tel quel. Il faut le découper en <strong>partitions</strong>.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Fdisk Explanation -->
+                <div class="glass-panel rounded-xl p-6 col-span-1 border-t-4 border-purple-500">
+                    <h3 class="text-lg font-semibold text-white mb-2">L'outil fdisk</h3>
+                    <p class="text-sm mb-4">
+                        <code>fdisk</code> est l'outil historique pour manipuler les tables de partition.
+                    </p>
+                    <p class="text-xs text-slate-400 mb-4 font-bold">Menu interactif (Command m for help) :</p>
+                    <table class="w-full text-sm text-left text-slate-300">
+                        <tbody class="divide-y divide-slate-700">
+                            <tr>
+                                <td class="py-2 font-bold text-purple-400 code-font w-8">m</td>
+                                <td class="py-2">Affiche le menu d'aide.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 font-bold text-green-400 code-font">n</td>
+                                <td class="py-2">Crée une nouvelle partition.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 font-bold text-red-400 code-font">d</td>
+                                <td class="py-2">Supprime une partition existante.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 font-bold text-yellow-400 code-font">t</td>
+                                <td class="py-2">Change l'ID système (ex: 82 pour Swap, 8e pour LVM).</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 font-bold text-orange-400 code-font">w</td>
+                                <td class="py-2 text-orange-200">Écrit les changements sur le disque.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Swap Management -->
+                <div class="glass-panel rounded-xl p-6 col-span-1 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-yellow-200 mb-2"><i class="fa-solid fa-memory mr-2"></i>Le SWAP (Mémoire d'échange)</h3>
+                        <p class="text-sm text-slate-400 mb-4">
+                            Lorsque la RAM est pleine, Linux déplace les pages mémoire inactives vers le disque. C'est lent mais évite le crash.
+                        </p>
+                    </div>
+                    <div class="bg-slate-900 p-5 rounded-lg border border-slate-600">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                            <div class="bg-black p-3 rounded border-l-2 border-green-500">
+                                <span class="text-slate-500 block mb-1">1. Formater</span>
+                                <span class="text-green-400">mkswap /dev/sdb2</span>
+                            </div>
+                            <div class="bg-black p-3 rounded border-l-2 border-green-500">
+                                <span class="text-slate-500 block mb-1">2. Activer</span>
+                                <span class="text-green-400">swapon /dev/sdb2</span>
+                            </div>
+                            <div class="bg-black p-3 rounded border-l-2 border-yellow-500">
+                                <span class="text-slate-500 block mb-1">3. Vérifier</span>
+                                <span class="text-yellow-400">swapon -s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. FS Comparison -->
+        <section id="id-fs">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-indigo-500 flex items-center justify-center text-white font-bold">3</div>
+                <h2 class="text-2xl font-bold text-white">Comparatif des Systèmes de Fichiers</h2>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6 overflow-hidden">
+                <p class="mb-6 max-w-3xl text-sm">
+                    Le choix du système de fichiers détermine les performances, la fiabilité et les fonctionnalités de votre stockage. Voici les standards actuels sous Linux.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- EXT4 Card -->
+                    <div class="bg-slate-800 rounded-lg p-4 border-t-4 border-blue-500 hover:bg-slate-750 transition flex flex-col">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-white">EXT4</h3>
+                            <span class="text-[10px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded border border-blue-700">Standard</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 flex-grow">L'évolution stable de la famille ext. Robuste et compatible partout.</p>
+                        
+                        <ul class="space-y-2 text-xs mt-auto">
+                            <li class="flex justify-between border-b border-slate-700 pb-1">
+                                <span class="text-slate-500">Réduction taille</span>
+                                <span class="text-green-400"><i class="fa-solid fa-check"></i> Oui</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-700 pb-1">
+                                <span class="text-slate-500">Max Fichier</span>
+                                <span class="text-white">16 To</span>
+                            </li>
+                             <li class="flex justify-between pt-1">
+                                <span class="text-slate-500">Commande</span>
+                                <span class="text-blue-300 font-mono">mkfs.ext4</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- XFS Card -->
+                    <div class="bg-slate-800 rounded-lg p-4 border-t-4 border-red-500 hover:bg-slate-750 transition flex flex-col">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-white">XFS</h3>
+                            <span class="text-[10px] bg-red-900 text-red-200 px-2 py-0.5 rounded border border-red-700">Enterprise</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 flex-grow">Optimisé pour le parallélisme et les très gros volumes (RHEL/CentOS).</p>
+                        
+                        <ul class="space-y-2 text-xs mt-auto">
+                            <li class="flex justify-between border-b border-slate-700 pb-1">
+                                <span class="text-slate-500">Réduction taille</span>
+                                <span class="text-red-400 font-bold"><i class="fa-solid fa-xmark"></i> Non</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-700 pb-1">
+                                <span class="text-slate-500">Max Fichier</span>
+                                <span class="text-white">8 EiB</span>
+                            </li>
+                             <li class="flex justify-between pt-1">
+                                <span class="text-slate-500">Commande</span>
+                                <span class="text-red-300 font-mono">mkfs.xfs</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- BTRFS Card -->
+                    <div class="bg-slate-800 rounded-lg p-4 border-t-4 border-orange-500 hover:bg-slate-750 transition flex flex-col">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-white">Btrfs</h3>
+                            <span class="text-[10px] bg-orange-900 text-orange-200 px-2 py-0.5 rounded border border-orange-700">Moderne</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4 flex-grow">Système "Copy on Write" avec gestion de volume, snapshots et RAID.</p>
+                        
+                        <ul class="space-y-2 text-xs mt-auto">
+                            <li class="flex justify-between border-b border-slate-700 pb-1">
+                                <span class="text-slate-500">Fonction clé</span>
+                                <span class="text-orange-400">Snapshots</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-700 pb-1">
+                                <span class="text-slate-500">RAID logiciel</span>
+                                <span class="text-green-400"><i class="fa-solid fa-check"></i> Intégré</span>
+                            </li>
+                             <li class="flex justify-between pt-1">
+                                <span class="text-slate-500">Commande</span>
+                                <span class="text-orange-300 font-mono">mkfs.btrfs</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Interoperability Table -->
+                <div class="mt-6 pt-6 border-t border-slate-700">
+                    <h4 class="text-sm font-bold text-slate-300 mb-3">Interopérabilité (Disques Externes / USB)</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-400">
+                            <thead class="text-slate-500 bg-slate-900/50 uppercase">
+                                <tr>
+                                    <th class="px-3 py-2 rounded-l">Système</th>
+                                    <th class="px-3 py-2">Linux</th>
+                                    <th class="px-3 py-2">Windows</th>
+                                    <th class="px-3 py-2">MacOS</th>
+                                    <th class="px-3 py-2 rounded-r">Note</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
+                                <tr>
+                                    <td class="px-3 py-2 font-bold text-white">NTFS</td>
+                                    <td class="px-3 py-2 text-green-400">Oui (ntfs-3g)</td>
+                                    <td class="px-3 py-2 text-green-400">Natif</td>
+                                    <td class="px-3 py-2 text-yellow-500">Lecture seule*</td>
+                                    <td class="px-3 py-2">Standard Windows</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-3 py-2 font-bold text-white">exFAT</td>
+                                    <td class="px-3 py-2 text-green-400">Oui</td>
+                                    <td class="px-3 py-2 text-green-400">Oui</td>
+                                    <td class="px-3 py-2 text-green-400">Oui</td>
+                                    <td class="px-3 py-2 text-blue-300">Idéal Clés USB</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Montage & FSTAB -->
+        <section id="id-mount">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-green-600 flex items-center justify-center text-white font-bold">4</div>
+                <h2 class="text-2xl font-bold text-white">Montage & Persistance (/etc/fstab)</h2>
+            </div>
+            
+            <p class="mb-6 max-w-3xl">
+                Sous Linux, un disque n'apparait pas tout seul. Il faut le "monter" (l'attacher) sur un dossier vide. Le fichier <code>/etc/fstab</code> est lu au démarrage par systemd (ou init) pour monter automatiquement les disques.
+            </p>
+
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center gap-4 mb-6 bg-red-900/20 p-4 rounded border border-red-500/30">
+                    <i class="fa-solid fa-triangle-exclamation text-red-400 text-2xl"></i>
+                    <div>
+                        <h4 class="text-red-300 font-bold text-sm">Zone Critique</h4>
+                        <p class="text-xs text-red-200/70">Une erreur de syntaxe dans ce fichier peut empêcher le serveur de démarrer (Emergency Mode). Toujours tester avec <code>mount -a</code> avant de redémarrer.</p>
+                    </div>
+                </div>
+                
+                <!-- Fstab Visual Breakdown -->
+                <div class="overflow-x-auto mb-6">
+                    <div class="flex min-w-[800px] text-xs font-mono mb-2 text-slate-400 px-4 font-bold uppercase tracking-wider">
+                        <div class="w-[30%]">1. Périphérique (UUID)</div>
+                        <div class="w-[20%]">2. Point de montage</div>
+                        <div class="w-[10%]">3. Type</div>
+                        <div class="w-[25%]">4. Options</div>
+                        <div class="w-[5%] text-center">5. Dump</div>
+                        <div class="w-[10%] text-center">6. Pass</div>
+                    </div>
+                    <div class="flex min-w-[800px] bg-slate-900 p-4 rounded-lg border-l-4 border-green-500 font-mono text-sm shadow-inner items-center">
+                        <div class="w-[30%] text-yellow-400 break-all pr-4">UUID=5b3...a2</div>
+                        <div class="w-[20%] text-blue-400">/data</div>
+                        <div class="w-[10%] text-white">ext4</div>
+                        <div class="w-[25%] text-slate-300">defaults,noatime</div>
+                        <div class="w-[5%] text-purple-400 text-center">0</div>
+                        <div class="w-[10%] text-red-400 text-center">2</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-300">
+                    <div class="bg-slate-800 p-4 rounded h-full">
+                        <strong class="text-white block mb-2 border-b border-slate-600 pb-1">Les Options (Col 4)</strong>
+                        <ul class="list-disc list-inside space-y-2 text-xs">
+                            <li><code>defaults</code> : L'option passe-partout. Active rw (lecture/écriture), exec (exécuter des programmes), auto (montage au boot).</li>
+                            <li><code>ro</code> : (Read-Only) Sécurise les données sensibles en lecture seule.</li>
+                            <li><code>noatime</code> : Optimisation de performance. Évite d'écrire sur le disque à chaque fois qu'on lit un fichier (mise à jour de l'heure d'accès).</li>
+                            <li><code>_netdev</code> : Indispensable pour les montages réseau (iSCSI, NFS) pour attendre le réseau avant de monter.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded h-full">
+                        <strong class="text-white block mb-2 border-b border-slate-600 pb-1">Dump (Col 5)</strong>
+                        <p class="text-xs text-slate-400 mb-2">Sert à l'outil de backup historique <code>dump</code>.</p>
+                        <ul class="space-y-1 text-xs">
+                            <li><span class="text-purple-400 font-bold">0</span> : (Recommandé) Ne pas sauvegarder.</li>
+                            <li><span class="text-purple-400 font-bold">1</span> : Sauvegarder si dump est utilisé.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded h-full">
+                        <strong class="text-white block mb-2 border-b border-slate-600 pb-1">Fsck Check (Col 6)</strong>
+                        <p class="text-xs text-slate-400 mb-2">Définit l'ordre de vérification du système de fichiers au démarrage.</p>
+                        <ul class="space-y-1 text-xs">
+                            <li><span class="text-red-400 font-bold">0</span> : Pas de vérification (XFS, Swap).</li>
+                            <li><span class="text-red-400 font-bold">1</span> : Priorité absolue (Réservé à la racine <code>/</code>).</li>
+                            <li><span class="text-red-400 font-bold">2</span> : Vérifier après la racine (Pour <code>/home</code>, <code>/data</code>...).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. LVM (Master Class) -->
+        <section id="id-lvm">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-pink-500 flex items-center justify-center text-white font-bold">5</div>
+                <h2 class="text-2xl font-bold text-white">LVM : Logical Volume Manager</h2>
+            </div>
+            
+            <p class="mb-6 max-w-3xl">
+                LVM est une couche d'abstraction qui s'intercale entre le matériel et le système de fichiers. Imaginez LVM comme une fonderie : il prend des disques durs de tailles différentes (PV), les fond dans un grand réservoir de stockage unique (VG), puis puise dans ce réservoir pour créer des partitions sur-mesure (LV) redimensionnables à volonté.
+            </p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Lifecycle Diagram (Simplified) -->
+                <div class="glass-panel rounded-xl p-6 h-full">
+                    <h3 class="text-lg font-semibold text-pink-300 mb-4">Architecture & Création</h3>
+                    <div class="flex flex-col gap-3">
+                        <!-- LV -->
+                        <div class="bg-pink-900/40 border border-pink-500 rounded p-4 text-center">
+                            <span class="text-xs text-pink-300 uppercase font-bold tracking-wider mb-1 block">Couche 3 : Volume Logique (LV)</span>
+                            <div class="text-white font-bold text-lg mb-1">/dev/vg_data/lv_compta</div>
+                            <div class="text-xs text-slate-400">C'est ici que l'on formatte (mkfs) et que l'utilisateur voit ses données. Il est élastique.</div>
+                        </div>
+                        
+                        <div class="h-6 flex justify-center items-center">
+                            <i class="fa-solid fa-arrow-up text-slate-600"></i>
+                        </div>
+
+                        <!-- VG -->
+                        <div class="bg-slate-800 border border-slate-600 rounded p-4 text-center relative overflow-hidden">
+                            <span class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1 block">Couche 2 : Groupe de Volumes (VG)</span>
+                            <div class="text-white font-bold text-lg">vg_data</div>
+                            <div class="absolute top-2 right-2 text-[10px] bg-slate-700 px-2 py-1 rounded text-yellow-400 border border-slate-500">PE Size: 4MB</div>
+                            <p class="text-xs text-slate-500 mt-2">Le "réservoir" global. Il additionne l'espace des disques physiques.</p>
+                        </div>
+
+                        <div class="h-6 flex justify-center items-center">
+                            <i class="fa-solid fa-arrow-up text-slate-600"></i>
+                        </div>
+
+                        <!-- PV -->
+                        <div class="flex gap-3">
+                            <div class="flex-1 bg-blue-900/30 border border-blue-600 rounded p-3 text-center">
+                                <span class="block text-xs text-blue-300 font-bold">PV 1</span>
+                                <span class="text-xs">/dev/sdb (50Go)</span>
+                            </div>
+                            <div class="flex-1 bg-blue-900/30 border border-blue-600 rounded p-3 text-center">
+                                <span class="block text-xs text-blue-300 font-bold">PV 2</span>
+                                <span class="text-xs">/dev/sdc (100Go)</span>
+                            </div>
+                        </div>
+                        <p class="text-center text-xs text-slate-500 mt-1">Couche 1 : Les disques physiques réels initialisés.</p>
+                    </div>
+                </div>
+
+                <!-- Advanced Operations -->
+                <div class="space-y-6">
+                    
+                    <!-- Extension -->
+                    <div class="glass-panel rounded-xl p-6 border-l-4 border-green-500">
+                        <h3 class="font-bold text-white mb-2"><i class="fa-solid fa-expand mr-2"></i>Agrandissement (Sans interruption)</h3>
+                        <p class="text-sm text-slate-400 mb-4">
+                            C'est la force de LVM. Si <code>/compta</code> est plein, on peut l'agrandir pendant que les comptables travaillent dessus.
+                        </p>
+                        <div class="bg-black p-4 rounded shadow-lg">
+                            <p class="text-xs text-slate-500 mb-1"># La méthode moderne en 1 commande (-r resize auto)</p>
+                            <code class="block text-green-400 text-sm font-mono">lvextend -r -L +5G /dev/vg_data/lv_compta</code>
+                            
+                            <div class="mt-3 pt-3 border-t border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1"># Si l'espace libre est sur un NOUVEAU disque :</p>
+                                <code class="block text-slate-300 text-xs font-mono mb-1">1. pvcreate /dev/sdd</code>
+                                <code class="block text-slate-300 text-xs font-mono mb-1">2. vgextend vg_data /dev/sdd</code>
+                                <code class="block text-slate-300 text-xs font-mono">3. lvextend...</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reduction -->
+                    <div class="glass-panel rounded-xl p-6 border-l-4 border-red-500 relative overflow-hidden">
+                        <div class="absolute -right-6 -top-6 bg-red-600 w-32 h-32 rounded-full blur-3xl opacity-10"></div>
+                        <h3 class="font-bold text-white mb-2"><i class="fa-solid fa-compress mr-2"></i>Réduction (Procédure Risquée)</h3>
+                        <div class="text-sm space-y-2 mb-4">
+                            <p class="text-red-300 font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-ban"></i> 
+                                ATTENTION : XFS ne peut PAS être réduit !
+                            </p>
+                            <p class="text-slate-400 text-xs">
+                                Seul le système de fichiers EXT4 supporte la réduction. L'opération nécessite de <strong>démonter</strong> le volume (interruption de service obligatoire) pour éviter la corruption de données.
+                            </p>
+                        </div>
+                        <div class="bg-black p-3 rounded text-xs font-mono space-y-1">
+                            <div class="text-slate-500"># 1. Démonter impératif</div>
+                            <div class="text-white">umount /compta</div>
+                            <div class="text-slate-500"># 2. Vérifier intégrité (Force check)</div>
+                            <div class="text-white">e2fsck -f /dev/vg_data/lv_compta</div>
+                            <div class="text-slate-500"># 3. Réduire le FS (ex: on descend à 8G)</div>
+                            <div class="text-white">resize2fs /dev/vg_data/lv_compta 8G</div>
+                            <div class="text-slate-500"># 4. Réduire le conteneur LVM pour coller au FS</div>
+                            <div class="text-white">lvreduce -L 8G /dev/vg_data/lv_compta</div>
+                            <div class="text-slate-500"># 5. Remonter</div>
+                            <div class="text-white">mount -a</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Dépannage / Troubleshooting -->
+        <section id="id-fix">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-red-600 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-wrench text-xs"></i></div>
+                <h2 class="text-2xl font-bold text-white">Guide de Dépannage</h2>
+            </div>
+            
+            <p class="mb-6">Les problèmes de stockage sont fréquents. Voici les cas classiques et comment les résoudre.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel rounded-xl p-6">
+                    <h4 class="text-red-400 font-bold mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-lock"></i> Erreur : "Target is busy"
+                    </h4>
+                    <p class="text-sm text-slate-400 mb-3">
+                        Vous essayez de démonter un disque (<code>umount</code>) mais le système refuse car un utilisateur ou un processus utilise un fichier sur ce disque.
+                    </p>
+                    <div class="bg-slate-900 p-3 rounded text-xs font-mono border border-slate-700">
+                        <div class="text-slate-500"># 1. Identifier le coupable</div>
+                        <div class="text-green-400 mb-2">lsof /mnt/data</div>
+                        <div class="text-slate-400 italic mb-2">// Affiche le PID et l'utilisateur</div>
+                        
+                        <div class="text-slate-500"># 2. Solution douce</div>
+                        <div class="text-slate-300 mb-2">Demander à l'utilisateur de fermer ses fichiers.</div>
+                        
+                        <div class="text-slate-500"># 3. Solution brutale (Kill process)</div>
+                        <div class="text-green-400">fuser -km /mnt/data</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl p-6">
+                    <h4 class="text-yellow-400 font-bold mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-life-ring"></i> Emergency Mode au Boot
+                    </h4>
+                    <p class="text-sm text-slate-400 mb-3">
+                        Le serveur démarre en mode secours (invite root directe). C'est souvent causé par un UUID incorrect dans <code>/etc/fstab</code> ou un disque débranché.
+                    </p>
+                    <div class="bg-slate-900 p-3 rounded text-xs font-mono border border-slate-700">
+                        <div class="text-slate-500"># 1. Le système de fichiers est en Lecture Seule</div>
+                        <div class="text-slate-300 mb-2">Il faut le remonter en écriture pour corriger le fichier.</div>
+                        
+                        <div class="text-slate-500"># 2. Commande magique</div>
+                        <div class="text-green-400 mb-2">mount -o remount,rw /</div>
+                        
+                        <div class="text-slate-500"># 3. Corriger l'erreur (commenter la ligne fautive)</div>
+                        <div class="text-green-400 mb-2">nano /etc/fstab</div>
+                        
+                        <div class="text-slate-500"># 4. Redémarrer</div>
+                        <div class="text-green-400">reboot</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. TP Guidé 1 (EX-TP4) -->
+        <section id="tp1">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-gray-600 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-hard-drive text-xs"></i></div>
+                <h2 class="text-2xl font-bold text-white">TP Guidé 1 : Ajout d'un Disque Physique Standard</h2>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6 border-t-4 border-gray-500">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-300 mb-2">Scénario : Disque de Logs</h3>
+                    <p class="text-sm text-slate-300">
+                        Votre serveur manque d'espace pour les journaux d'application. Vous ajoutez un disque de 50Go pour le dédier aux logs.
+                        <br><strong>Objectif :</strong> Le rendre utilisable et le monter sur <code>/var/log/app</code>.
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">1. Identification du Disque</h4>
+                        <p class="text-xs text-slate-400 mb-3">Vérifiez le nom attribué par le noyau (ex: sdb, sdc...).</p>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <code class="text-gray-400">lsblk</code>
+                            <div class="text-slate-500 mt-2 border-l-2 border-slate-600 pl-2">
+                                sda      8:0    0   20G  0 disk <br>
+                                └─sda1   8:1    0   20G  0 part /<br>
+                                <span class="text-yellow-400 font-bold">sdd      8:48   0   50G  0 disk</span>
+                            </div>
+                            <p class="text-slate-400 mt-2 italic">// Le nouveau disque est 'sdd' et il est vide (pas de partition).</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">2. Partitionnement</h4>
+                        <p class="text-xs text-slate-400 mb-3">Nous allons créer une partition unique prenant tout l'espace.</p>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <code class="text-gray-400">fdisk /dev/sdd</code>
+                            <div class="mt-2 space-y-1 text-slate-300">
+                                <div>Command: <span class="text-green-400">n</span> (New partition)</div>
+                                <div>Select: <span class="text-green-400">p</span> (Primary)</div>
+                                <div>Partition number: <span class="text-green-400">1</span></div>
+                                <div>First sector: <span class="text-green-400">[Entrée]</span> (Défaut)</div>
+                                <div>Last sector: <span class="text-green-400">[Entrée]</span> (Défaut = Tout le disque)</div>
+                                <div>Command: <span class="text-red-400">w</span> (Write changes)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">3. Formatage (Création du FS)</h4>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <div class="text-slate-500 mb-1"># Formater la partition 1 en ext4</div>
+                            <code class="text-gray-400">mkfs.ext4 /dev/sdd1</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">4. Montage et Persistance</h4>
+                        
+                        <div class="bg-black p-3 rounded text-xs font-mono space-y-3">
+                            <div>
+                                <div class="text-slate-500 mb-1"># A. Créer le dossier et tester</div>
+                                <code class="text-gray-400 block">mkdir -p /var/log/app</code>
+                                <code class="text-gray-400 block">mount /dev/sdd1 /var/log/app</code>
+                            </div>
+
+                            <div>
+                                <div class="text-slate-500 mb-1"># B. Récupérer l'UUID</div>
+                                <code class="text-gray-400">blkid /dev/sdd1</code>
+                                <div class="text-yellow-400 text-[10px] my-1">/dev/sdd1: UUID="998877-aabb..." TYPE="ext4"</div>
+                            </div>
+
+                            <div>
+                                <div class="text-slate-500 mb-1"># C. Configurer /etc/fstab</div>
+                                <code class="text-white block break-all">UUID=998877-aabb...  /var/log/app  ext4  defaults  0 2</code>
+                            </div>
+                            
+                            <div>
+                                <div class="text-slate-500 mb-1"># D. Vérification finale</div>
+                                <code class="text-gray-400">mount -a</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. TP Guidé 2 (NAS / NFS) -->
+        <section id="tp2">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-cyan-600 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-network-wired text-xs"></i></div>
+                <h2 class="text-2xl font-bold text-white">TP Guidé 2 : Montage d'un Stockage Réseau (NAS/NFS)</h2>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6 border-t-4 border-cyan-500">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-cyan-400 mb-2">Scénario : Accès aux Sauvegardes</h3>
+                    <p class="text-sm text-slate-300">
+                        L'équipe de sauvegarde vous met à disposition un volume sur le NAS d'entreprise (Synology/Linux) pour stocker vos archives.
+                        <br>
+                        <strong>Serveur NAS :</strong> <code>192.168.1.100</code> <br>
+                        <strong>Dossier partagé :</strong> <code>/volume1/backups</code>
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">1. Installer le client NFS</h4>
+                        <p class="text-xs text-slate-400 mb-3">Linux ne parle pas NFS par défaut, il faut installer les paquets.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># Debian / Ubuntu</div>
+                                <code class="text-cyan-400">apt update && apt install nfs-common</code>
+                            </div>
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># RHEL / Rocky / CentOS</div>
+                                <code class="text-cyan-400">dnf install nfs-utils</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">2. Découverte (Vérification)</h4>
+                        <p class="text-xs text-slate-400 mb-3">Vérifiez que le NAS autorise votre connexion et listez les dossiers.</p>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <code class="text-cyan-400">showmount -e 192.168.1.100</code>
+                            <div class="text-slate-500 mt-2">Export list for 192.168.1.100: <br>/volume1/backups *</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">3. Montage Manuel & Test</h4>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <div class="text-slate-500 mb-1"># Créer le point de montage local</div>
+                            <code class="text-cyan-400">mkdir -p /mnt/nas_backups</code>
+                            <div class="text-slate-500 mt-2 mb-1"># Monter (Type nfs)</div>
+                            <code class="text-cyan-400">mount -t nfs 192.168.1.100:/volume1/backups /mnt/nas_backups</code>
+                            <div class="text-slate-500 mt-2 mb-1"># Vérifier (créer un fichier test)</div>
+                            <code class="text-cyan-400">touch /mnt/nas_backups/test.txt</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">4. Persistance (Attention Piège !)</h4>
+                        <p class="text-xs text-slate-400 mb-3">
+                            Pour le montage réseau dans <code>/etc/fstab</code>, il faut ABSOLUMENT utiliser l'option <code>_netdev</code>. 
+                            Sinon, Linux essaiera de monter le NAS <em>avant</em> d'avoir une adresse IP au démarrage, et bloquera le boot.
+                        </p>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <div class="text-slate-500 mb-1"># Ajouter dans /etc/fstab</div>
+                            <code class="text-white block break-all">192.168.1.100:/volume1/backups  /mnt/nas_backups  nfs  defaults,_netdev  0 0</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. TP Guidé 3 (SMB) -->
+        <section id="tp3">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-indigo-600 flex items-center justify-center text-white font-bold"><i class="fa-brands fa-windows text-xs"></i></div>
+                <h2 class="text-2xl font-bold text-white">TP Guidé 3 : Montage Partage Windows (SMB/CIFS)</h2>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6 border-t-4 border-indigo-500">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-indigo-400 mb-2">Scénario : Serveur de Fichiers Windows</h3>
+                    <p class="text-sm text-slate-300">
+                        L'entreprise stocke des documents Excel sur un serveur Windows. Vous devez les rendre accessibles sur votre serveur Linux.
+                        <br>
+                        <strong>Serveur :</strong> <code>192.168.1.200</code> (ou <code>//win-server</code>)<br>
+                        <strong>Partage :</strong> <code>Compta</code><br>
+                        <strong>Compte :</strong> <code>utilisateur</code> / <code>MonMotDePasse</code>
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">1. Installer les utilitaires CIFS</h4>
+                        <p class="text-xs text-slate-400 mb-3">Le protocole SMB (Common Internet File System) nécessite un paquet spécifique.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># Debian / Ubuntu</div>
+                                <code class="text-indigo-400">apt install cifs-utils</code>
+                            </div>
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># RHEL / CentOS</div>
+                                <code class="text-indigo-400">dnf install cifs-utils</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">2. Création du point de montage</h4>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <code class="text-indigo-400">mkdir -p /mnt/win_compta</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">3. Montage Manuel (Test)</h4>
+                        <p class="text-xs text-slate-400 mb-3">Attention : Le mot de passe est visible dans l'historique ici (mauvaise pratique pour la prod, ok pour le test).</p>
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <div class="text-slate-500 mb-1"># Syntaxe : mount -t cifs //IP/Partage /PointMontage -o options</div>
+                            <code class="text-indigo-400 block break-all">mount -t cifs //192.168.1.200/Compta /mnt/win_compta -o username=utilisateur,password=MonMotDePasse</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h4 class="text-white font-bold text-sm mb-2">4. Persistance Sécurisée (fstab + credentials)</h4>
+                        <p class="text-xs text-slate-400 mb-3">
+                            Ne mettez JAMAIS de mot de passe en clair dans <code>/etc/fstab</code> car il est lisible par tous. Utilisez un fichier de credentials protégé.
+                        </p>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># A. Créer le fichier secret (root seulement)</div>
+                                <code class="text-indigo-400">nano /root/.smbcreds</code>
+                                <div class="text-slate-300 mt-2 border-l-2 border-slate-600 pl-2">
+                                    username=utilisateur<br>
+                                    password=MonMotDePasse
+                                </div>
+                                <div class="text-slate-500 mt-2 mb-1"># Protéger le fichier</div>
+                                <code class="text-indigo-400">chmod 600 /root/.smbcreds</code>
+                            </div>
+
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># B. Ajouter dans /etc/fstab</div>
+                                <code class="text-white block break-all">
+                                    //192.168.1.200/Compta  /mnt/win_compta  cifs  credentials=/root/.smbcreds,_netdev  0 0
+                                </code>
+                                <div class="text-yellow-400 mt-2 italic">Note: _netdev est obligatoire pour attendre le réseau !</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. TP Guidé 4 (EX-TP1 - LVM) -->
+        <section id="tp4">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-8 rounded bg-yellow-500 flex items-center justify-center text-black font-bold"><i class="fa-solid fa-flask text-xs"></i></div>
+                <h2 class="text-2xl font-bold text-white">TP Guidé 4 : Scénario LVM (MySQL)</h2>
+            </div>
+
+            <div class="glass-panel rounded-xl p-6 border-t-4 border-yellow-500">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-yellow-400 mb-2">Scénario : Le Serveur de Base de Données</h3>
+                    <p class="text-sm text-slate-300">
+                        Vous êtes administrateur d'un serveur Linux. Une nouvelle application nécessite un espace de stockage dédié pour MySQL.
+                        <br>
+                        <strong>Matériel disponible :</strong> Un disque dur vierge de 20 Go détecté en <code>/dev/sdb</code>.
+                    </p>
+                </div>
+
+                <!-- Phase 1 -->
+                <div class="space-y-8">
+                    <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-white font-bold">Mission 1 : Initialisation</h4>
+                            <span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">Setup</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">
+                            Créez un volume logique nommé <code>lv_mysql</code> de 10 Go dans un groupe <code>vg_data</code> sur le disque <code>/dev/sdb</code>. Formatez-le en <strong>XFS</strong> et montez-le sur <code>/var/lib/mysql</code>.
+                        </p>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-black p-3 rounded text-xs font-mono group relative">
+                                <div class="text-slate-500 mb-1"># 1. Créer le Volume Physique (PV)</div>
+                                <code class="text-green-400">pvcreate /dev/sdb</code>
+                            </div>
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># 2. Créer le Groupe (VG)</div>
+                                <code class="text-green-400">vgcreate vg_data /dev/sdb</code>
+                            </div>
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># 3. Créer le Volume Logique (LV)</div>
+                                <code class="text-green-400">lvcreate -n lv_mysql -L 10G vg_data</code>
+                            </div>
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># 4. Formater en XFS</div>
+                                <code class="text-green-400">mkfs.xfs /dev/vg_data/lv_mysql</code>
+                            </div>
+                            <div class="bg-black p-3 rounded text-xs font-mono">
+                                <div class="text-slate-500 mb-1"># 5. Créer le dossier et monter</div>
+                                <code class="text-green-400">mkdir -p /var/lib/mysql</code><br>
+                                <code class="text-green-400">mount /dev/vg_data/lv_mysql /var/lib/mysql</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 -->
+                    <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-white font-bold">Mission 2 : Urgence Disque Plein</h4>
+                            <span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">Extension</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">
+                            Les logs ont rempli l'espace ! Il reste de la place sur <code>/dev/sdb</code> (il faisait 20 Go, on en a pris 10).
+                            <br><strong>Objectif :</strong> Allouer tout l'espace restant au volume, sans éteindre le serveur.
+                        </p>
+                        
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <div class="text-slate-500 mb-1"># Étendre le LV et le système de fichiers en une seule commande</div>
+                            <div class="text-slate-500 mb-1 italic">// -l +100%FREE : Utiliser tout le reste du VG</div>
+                            <div class="text-slate-500 mb-1 italic">// -r : Redimensionner le FS automatiquement (resizefs)</div>
+                            <code class="text-green-400 block mt-2">lvextend -l +100%FREE -r /dev/vg_data/lv_mysql</code>
+                        </div>
+                    </div>
+
+                    <!-- Phase 3 -->
+                    <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-white font-bold">Mission 3 : Persistance</h4>
+                            <span class="text-xs bg-purple-900 text-purple-300 px-2 py-1 rounded">Config</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4">
+                            Assurez-vous que le montage survive au redémarrage en configurant <code>fstab</code>.
+                        </p>
+                        
+                        <div class="bg-black p-3 rounded text-xs font-mono">
+                            <div class="text-slate-500 mb-1"># 1. Récupérer l'UUID</div>
+                            <code class="text-green-400">blkid /dev/vg_data/lv_mysql</code>
+                            <div class="text-yellow-400 text-[10px] my-1">Output: /dev/...: UUID="550e8400-e29b..." TYPE="xfs"</div>
+                            
+                            <div class="text-slate-500 mt-3 mb-1"># 2. Ajouter dans /etc/fstab</div>
+                            <code class="text-blue-300">UUID=550e8400-e29b...  /var/lib/mysql  xfs  defaults  0 0</code>
+                            
+                            <div class="text-slate-500 mt-3 mb-1"># 3. Tester (CRUCIAL)</div>
+                            <code class="text-green-400">mount -a</code>
+                            <span class="text-slate-500 ml-2">// Si pas d'erreur, c'est gagné.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 border-t border-slate-800 pt-8 text-center text-slate-500 text-sm pb-8">
+            <p>Admin Linux Advanced CheatSheet • Généré pour apprentissage • <span class="text-slate-600">Version 13.0 Navigation Menu</span></p>
+        </footer>
+
+    </main>
+</body>
+</html>
