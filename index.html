@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
         /* Style pour une transition douce de l'accordéon */
         .accordion-content {
             transition: max-height 0.3s ease-out;
@@ -20,10 +22,11 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-900 text-gray-300">
 
     <div class="flex h-screen overflow-hidden">
-        
+
         <!-- Barre Latérale (Sidebar) -->
         <!-- Elle est masquée sur mobile (-translate-x-full) et s'affiche sur clic du burger -->
         <!-- Elle est visible en permanence sur les écrans moyens et plus (md:translate-x-0) -->
@@ -31,13 +34,17 @@
 
         <!-- Conteneur Principal (Contenu + Header mobile) -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            
+
             <!-- Header Mobile (Haut) -->
             <header class="md:hidden flex items-center justify-between p-4 bg-gray-800 border-b border-gray-700">
                 <span class="text-xl font-bold text-white">Documentation</span>
                 <!-- Bouton Burger pour ouvrir le menu -->
                 <button id="burger-btn" class="text-gray-400 hover:text-white" aria-label="Ouvrir le menu">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
                 </button>
             </header>
 
@@ -45,17 +52,20 @@
             <main class="flex-1 overflow-y-auto p-6 md:p-10">
                 <h1 class="text-4xl font-bold text-white mb-6">Syllabus LFCS</h1>
                 <p class="text-lg text-gray-400 mb-10">
-                    Ce site documente le parcours de préparation pour la certification Linux Foundation Certified Sysadmin (LFCS), semaine par semaine, basé sur le syllabus fourni.
+                    Ce site documente le parcours de préparation pour la certification Linux Foundation Certified
+                    Sysadmin (LFCS), semaine par semaine, basé sur le syllabus fourni.
                 </p>
 
                 <!-- Grille de Cartes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     <!-- Carte 0 -->
-                    <a href="./introduction.html" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
+                    <a href="./introduction.html"
+                        class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
                         <div class="p-5">
                             <h3 class="text-xl font-bold text-white mb-2">Introduction & Installation</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Comprendre le format de l’examen LFCS et ses compétences évaluées - Mettre en place un environnement de pratique adapté </p>
+                            <p class="text-gray-400 mb-4 text-sm">Comprendre le format de l’examen LFCS et ses
+                                compétences évaluées - Mettre en place un environnement de pratique adapté </p>
                             <div class="flex flex-wrap gap-2">
                                 <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full"> </span>
                                 <span class="text-xs bg-gray-500/50 text-gray-200 px-2.5 py-1 rounded-full"> </span>
@@ -64,22 +74,28 @@
                     </a>
 
                     <!-- Carte 1 -->
-                     <a href="./users_groups.html" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
+                    <a href="./users_groups.html"
+                        class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
                         <div class="p-5">
                             <h3 class="text-xl font-bold text-white mb-2">Utilisateurs</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Gérer utilisateurs, groupes et permissions de manière sécurisée, incluant les ACLs.</p>
+                            <p class="text-gray-400 mb-4 text-sm">Gérer utilisateurs, groupes et permissions de manière
+                                sécurisée, incluant les ACLs.</p>
                             <div class="flex flex-wrap gap-2">
-                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine 2</span>
-                                <span class="text-xs bg-red-600/50 text-red-200 px-2.5 py-1 rounded-full">Sécurité</span>
+                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine
+                                    2</span>
+                                <span
+                                    class="text-xs bg-red-600/50 text-red-200 px-2.5 py-1 rounded-full">Sécurité</span>
                             </div>
                         </div>
                     </a>
 
                     <!-- Carte 2 -->
-                    <a href="./navigation_cli.html" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
+                    <a href="./navigation_cli.html"
+                        class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
                         <div class="p-5">
                             <h3 class="text-xl font-bold text-white mb-2">Navigation et Manipulation de Fichiers</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Maîtriser la navigation en CLI et la manipulation des fichiers (création, recherche, archives).</p>
+                            <p class="text-gray-400 mb-4 text-sm">Maîtriser la navigation en CLI et la manipulation des
+                                fichiers (création, recherche, archives).</p>
                             <div class="flex flex-wrap gap-2">
                                 <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full"> </span>
                                 <span class="text-xs bg-gray-500/50 text-gray-200 px-2.5 py-1 rounded-full"> </span>
@@ -88,10 +104,12 @@
                     </a>
 
                     <!-- Carte 3 -->
-                    <a href="/operations.html" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
+                    <a href="./operations.html"
+                        class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
                         <div class="p-5">
                             <h3 class="text-xl font-bold text-white mb-2">Semaine 3: Déploiement et Opérations</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Les compétences essentielles pour le déploiement, la gestion et la maintenance d'un système Linux</p>
+                            <p class="text-gray-400 mb-4 text-sm">Les compétences essentielles pour le déploiement, la
+                                gestion et la maintenance d'un système Linux</p>
                             <div class="flex flex-wrap gap-2">
                                 <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full"> </span>
                                 <span class="text-xs bg-green-600/50 text-green-200 px-2.5 py-1 rounded-full"> </span>
@@ -100,40 +118,38 @@
                     </a>
 
                     <!-- Carte 4 -->
-                    <a href="/disque.html" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
+                    <a href="./disque.html"
+                        class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
                         <div class="p-5">
                             <h3 class="text-xl font-bold text-white mb-2">Semaine 4: Stockage & LVM</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Gérer disques, partitions (ext4), montages automatiques (/etc/fstab) et LVM.</p>
+                            <p class="text-gray-400 mb-4 text-sm">Gérer disques, partitions (ext4), montages
+                                automatiques (/etc/fstab) et LVM.</p>
                             <div class="flex flex-wrap gap-2">
-                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine 4</span>
-                                <span class="text-xs bg-purple-600/50 text-purple-200 px-2.5 py-1 rounded-full">LVM</span>
+                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine
+                                    4</span>
+                                <span
+                                    class="text-xs bg-purple-600/50 text-purple-200 px-2.5 py-1 rounded-full">LVM</span>
                             </div>
                         </div>
                     </a>
 
                     <!-- Carte 5 -->
-                    <a href="#" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
+                    <a href="./anssi_best_practice.html"
+                        class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
                         <div class="p-5">
-                            <h3 class="text-xl font-bold text-white mb-2">Semaine 5: Réseaux & Sécurité</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Configurer IP statique, DNS, restreindre SSH et gérer les règles firewalld.</p>
+                            <h3 class="text-xl font-bold text-white mb-2">Semaine 5 - 6: Mise en situation - Nginx ·
+                                Docker · App / Bonne Pratique ANSSI-BP-028 v2.0 </h3>
+                            <p class="text-gray-400 mb-4 text-sm">Configuration complète d'un serveur de production
+                                selon l'ANSSI-BP-028 : Application des recommandations de l'ANSSI-BP-028 v2.0</p>
                             <div class="flex flex-wrap gap-2">
-                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine 5</span>
-                                <span class="text-xs bg-yellow-600/50 text-yellow-200 px-2.5 py-1 rounded-full">Réseau</span>
+                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine
+                                    5-6</span>
+                                <span class="text-xs bg-yellow-600/50 text-yellow-200 px-2.5 py-1 rounded-full"> Bonne
+                                    pratique ANSSI</span>
                             </div>
                         </div>
                     </a>
 
-                    <!-- Carte 6 -->
-                    <a href="#" class="block bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300 border-t-4 border-blue-500">
-                        <div class="p-5">
-                            <h3 class="text-xl font-bold text-white mb-2">Semaine 7: Conteneurs</h3>
-                            <p class="text-gray-400 mb-4 text-sm">Déployer des services avec Docker/Podman (Nginx) et installer des serveurs web (Apache).</p>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="text-xs bg-blue-600/50 text-blue-200 px-2.5 py-1 rounded-full">Semaine 7</span>
-                                <span class="text-xs bg-cyan-600/50 text-cyan-200 px-2.5 py-1 rounded-full">Docker</span>
-D                            </div>
-                        </div>
-                    </a>
 
                 </div>
             </main>
@@ -142,7 +158,7 @@ D                            </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            
+
             // --- Gestion du menu mobile ---
             const burgerBtn = document.getElementById('burger-btn');
             const closeBtn = document.getElementById('close-btn');
@@ -188,5 +204,5 @@ D                            </div>
         });
     </script>
 </body>
-</html>
 
+</html>
