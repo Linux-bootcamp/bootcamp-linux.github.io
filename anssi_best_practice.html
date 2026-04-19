@@ -1,1221 +1,1579 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mise en Situation — Nginx · Docker · App</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-
-/* ─── TOKENS ─────────────────────────────────────────── */
-:root {
-  --white:   #ffffff;
-  --grey-50: #f8f9fb;
-  --grey-100:#f0f2f5;
-  --grey-200:#e3e7ed;
-  --grey-300:#c8cfda;
-  --grey-400:#9aa3b3;
-  --grey-500:#6b7587;
-  --grey-700:#3a4155;
-  --grey-900:#1a1f2e;
-
-  --blue-50:  #eff5ff;
-  --blue-100: #ddeaff;
-  --blue-500: #2563eb;
-  --blue-600: #1d56d6;
-
-  --green-50:  #f0faf4;
-  --green-100: #d6f5e3;
-  --green-500: #16a34a;
-
-  --orange-50:  #fff7ed;
-  --orange-100: #fde8cc;
-  --orange-500: #ea7216;
-
-  --red-50:  #fff1f1;
-  --red-100: #fdd;
-  --red-500: #dc2626;
-
-  --cyan-50:  #ecfeff;
-  --cyan-100: #cffafe;
-  --cyan-500: #0891b2;
-
-  --purple-50:  #faf5ff;
-  --purple-500: #7c3aed;
-
-  /* Layer colours */
-  --c-internet: var(--red-500);
-  --c-ufw:      var(--orange-500);
-  --c-nginx:    var(--blue-500);
-  --c-docker:   var(--cyan-500);
-  --c-app:      var(--green-500);
-
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
-  --font-mono:    'DM Mono', 'Courier New', monospace;
-
-  --radius-sm: 6px;
-  --radius:    10px;
-  --radius-lg: 14px;
-
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-  --shadow:    0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
-  --shadow-lg: 0 12px 32px rgba(0,0,0,.1), 0 2px 8px rgba(0,0,0,.06);
-}
-
-/* ─── RESET & BASE ───────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--grey-50);
-  color: var(--grey-900);
-  font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ─── LAYOUT ─────────────────────────────────────────── */
-.layout { display: flex; min-height: 100vh; }
-
-/* ─── SIDEBAR ────────────────────────────────────────── */
-.sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  background: var(--white);
-  border-right: 1px solid var(--grey-200);
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar::-webkit-scrollbar { width: 4px; }
-.sidebar::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 4px; }
-
-/* Brand */
-.sb-brand {
-  padding: 24px 20px 18px;
-  border-bottom: 1px solid var(--grey-100);
-}
-
-.sb-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--c-docker);
-  margin-bottom: 8px;
-}
-
-.sb-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--grey-900);
-  line-height: 1.25;
-  margin-bottom: 4px;
-}
-
-.sb-subtitle { font-size: 11px; color: var(--grey-400); }
-
-/* Progress */
-.sb-progress {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--grey-100);
-}
-
-.sb-prog-row {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--grey-400);
-  margin-bottom: 7px;
-}
-
-.sb-prog-row strong { color: var(--green-500); }
-
-.prog-track {
-  height: 4px;
-  background: var(--grey-100);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.prog-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--green-500), #22c55e);
-  border-radius: 99px;
-  transition: width .4s ease;
-  width: 0%;
-}
-
-/* Architecture mini */
-.sb-arch {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--grey-100);
-}
-
-.sb-arch-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--grey-400);
-  margin-bottom: 10px;
-}
-
-.arch-stack { display: flex; flex-direction: column; gap: 2px; }
-
-.arch-layer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  background: var(--grey-50);
-  border: 1px solid var(--grey-100);
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--grey-700);
-  transition: background .15s;
-}
-
-.arch-layer:hover { background: var(--grey-100); }
-
-.arch-pip {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.arch-connector {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 18px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--grey-400);
-}
-
-.arch-connector::before {
-  content: '';
-  width: 1px;
-  height: 12px;
-  background: var(--grey-200);
-  flex-shrink: 0;
-}
-
-/* Nav */
-.sb-nav { flex: 1; padding: 10px 0 20px; }
-
-.nav-group {
-  padding: 10px 20px 3px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--grey-400);
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 20px;
-  font-size: 12.5px;
-  color: var(--grey-500);
-  border-left: 2px solid transparent;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all .15s;
-}
-
-.nav-link:hover { color: var(--grey-900); background: var(--grey-50); }
-
-.nav-link.active {
-  color: var(--blue-600);
-  background: var(--blue-50);
-  border-left-color: var(--blue-500);
-}
-
-.nav-indicator {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1.5px solid var(--grey-200);
-  background: var(--white);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 7px;
-  font-weight: 700;
-  color: transparent;
-  transition: all .2s;
-}
-
-.nav-link.done .nav-indicator {
-  background: var(--green-500);
-  border-color: var(--green-500);
-  color: var(--white);
-}
-
-.nav-badge {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--grey-300);
-}
-
-/* ─── MAIN ───────────────────────────────────────────── */
-.main {
-  flex: 1;
-  min-width: 0;
-  max-width: 900px;
-  padding: 48px 56px 96px;
-}
-
-/* ─── PAGE HEADER ────────────────────────────────────── */
-.page-header {
-  margin-bottom: 40px;
-}
-
-.page-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 18px;
-}
-
-.ptag {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 3px 10px;
-  border-radius: 99px;
-  border: 1px solid;
-  font-weight: 500;
-}
-
-.ptag-nginx  { color: var(--blue-600);   border-color: var(--blue-100);   background: var(--blue-50); }
-.ptag-docker { color: var(--cyan-500);   border-color: var(--cyan-100);   background: var(--cyan-50); }
-.ptag-app    { color: var(--green-500);  border-color: var(--green-100);  background: var(--green-50); }
-.ptag-anssi  { color: var(--purple-500); border-color: #e9d5ff;           background: var(--purple-50); }
-
-.page-title {
-  font-family: var(--font-display);
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--grey-900);
-  letter-spacing: -.02em;
-  margin-bottom: 12px;
-}
-
-.page-title em { font-style: italic; color: var(--blue-600); }
-
-.page-desc {
-  font-size: 14.5px;
-  color: var(--grey-500);
-  max-width: 620px;
-  line-height: 1.75;
-  margin-bottom: 20px;
-}
-
-.page-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  background: var(--white);
-  border: 1px solid var(--grey-200);
-  border-radius: var(--radius-sm);
-  padding: 5px 12px;
-  font-size: 12px;
-  color: var(--grey-500);
-  box-shadow: var(--shadow-sm);
-}
-
-/* ─── TABS ───────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  gap: 2px;
-  background: var(--grey-100);
-  border-radius: var(--radius);
-  padding: 4px;
-  margin-bottom: 36px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.06);
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 9px 10px;
-  border-radius: 7px;
-  font-size: 12.5px;
-  font-weight: 600;
-  font-family: var(--font-body);
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  color: var(--grey-500);
-  transition: all .15s;
-}
-
-.tab-btn:hover { color: var(--grey-700); }
-
-.tab-btn.active {
-  background: var(--white);
-  color: var(--grey-900);
-  box-shadow: var(--shadow-sm);
-}
-
-.tc { display: none; }
-.tc.active { display: block; }
-
-/* ─── ARCHITECTURE DIAGRAM ───────────────────────────── */
-.arch-diagram {
-  background: var(--white);
-  border: 1px solid var(--grey-200);
-  border-radius: var(--radius-lg);
-  padding: 28px 24px 20px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow-sm);
-}
-
-.diag-title {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--grey-400);
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.diag-flow {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  overflow-x: auto;
-}
-
-.diag-node {
-  flex: 1;
-  min-width: 140px;
-  border: 1.5px solid;
-  border-radius: var(--radius);
-  padding: 14px 14px 12px;
-  background: var(--white);
-  position: relative;
-}
-
-.diag-node-layer {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.diag-node-name {
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.diag-node-desc {
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--grey-500);
-}
-
-.diag-node-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 8px;
-}
-
-.diag-tag {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  padding: 2px 7px;
-  border-radius: 99px;
-  border: 1px solid;
-}
-
-.dn-internet { border-color: #fca5a5; background: var(--red-50); }
-.dn-internet .diag-node-layer,
-.dn-internet .diag-node-name { color: var(--c-internet); }
-.dn-internet .diag-tag { color: var(--c-internet); border-color: #fca5a5; background: var(--red-50); }
-
-.dn-ufw { border-color: #fdba74; background: var(--orange-50); }
-.dn-ufw .diag-node-layer,
-.dn-ufw .diag-node-name { color: var(--c-ufw); }
-.dn-ufw .diag-tag { color: var(--c-ufw); border-color: #fdba74; background: var(--orange-50); }
-
-.dn-nginx { border-color: var(--blue-100); background: var(--blue-50); }
-.dn-nginx .diag-node-layer,
-.dn-nginx .diag-node-name { color: var(--c-nginx); }
-.dn-nginx .diag-tag { color: var(--c-nginx); border-color: var(--blue-100); background: var(--blue-50); }
-
-.dn-docker { border-color: var(--cyan-100); background: var(--cyan-50); }
-.dn-docker .diag-node-layer,
-.dn-docker .diag-node-name { color: var(--c-docker); }
-.dn-docker .diag-tag { color: var(--c-docker); border-color: var(--cyan-100); background: var(--cyan-50); }
-
-.dn-app { border-color: var(--green-100); background: var(--green-50); }
-.dn-app .diag-node-layer,
-.dn-app .diag-node-name { color: var(--c-app); }
-.dn-app .diag-tag { color: var(--c-app); border-color: var(--green-100); background: var(--green-50); }
-
-.diag-arrow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  flex-shrink: 0;
-  gap: 2px;
-}
-
-.diag-arrow-line {
-  width: 28px;
-  height: 2px;
-  background: var(--grey-200);
-  position: relative;
-}
-
-.diag-arrow-line::after {
-  content: '▶';
-  position: absolute;
-  right: -8px;
-  top: -6px;
-  font-size: 8px;
-  color: var(--grey-300);
-}
-
-.diag-arrow-port {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--c-ufw);
-  font-weight: 600;
-}
-
-.diag-arrow-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--grey-400);
-}
-
-/* Stats row */
-.diag-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--grey-100);
-}
-
-.diag-stat {
-  background: var(--grey-50);
-  border: 1px solid var(--grey-100);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-}
-
-.diag-stat-label {
-  font-size: 10px;
-  color: var(--grey-400);
-  margin-bottom: 3px;
-  font-family: var(--font-mono);
-}
-
-.diag-stat-value {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--green-500);
-}
-
-/* ─── STEP BLOCKS ────────────────────────────────────── */
-.step {
-  background: var(--white);
-  border: 1px solid var(--grey-200);
-  border-radius: var(--radius);
-  margin-bottom: 8px;
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: box-shadow .2s, border-color .2s;
-}
-
-.step:hover { border-color: var(--grey-300); }
-.step.open  { border-color: var(--grey-300); box-shadow: var(--shadow); }
-
-.step-hdr {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  cursor: pointer;
-  user-select: none;
-  transition: background .15s;
-}
-
-.step-hdr:hover { background: var(--grey-50); }
-
-/* Checkbox */
-.step-cb {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  border: 1.5px solid var(--grey-300);
-  background: var(--white);
-  flex-shrink: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  color: transparent;
-  transition: all .2s;
-}
-
-.step-cb.done {
-  background: var(--green-500);
-  border-color: var(--green-500);
-  color: var(--white);
-}
-
-/* Badges */
-.step-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  padding: 3px 9px;
-  border-radius: 99px;
-  border: 1px solid;
-  flex-shrink: 0;
-}
-
-.b-m    { color: var(--green-500); border-color: var(--green-100); background: var(--green-50); }
-.b-i    { color: var(--blue-600);  border-color: var(--blue-100);  background: var(--blue-50); }
-.b-r    { color: var(--orange-500); border-color: var(--orange-100); background: var(--orange-50); }
-.b-ng   { color: var(--blue-600);  border-color: var(--blue-100);  background: var(--blue-50); }
-.b-dk   { color: var(--cyan-500);  border-color: var(--cyan-100);  background: var(--cyan-50); }
-.b-app  { color: var(--green-500); border-color: var(--green-100); background: var(--green-50); }
-.b-step { color: var(--purple-500); border-color: #e9d5ff; background: var(--purple-50); }
-
-.step-title {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--grey-800, #2d3347);
-  flex: 1;
-}
-
-.step-time {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--grey-400);
-  flex-shrink: 0;
-}
-
-.step-chev {
-  color: var(--grey-300);
-  font-size: 10px;
-  transition: transform .2s;
-  flex-shrink: 0;
-}
-
-.step.open .step-chev { transform: rotate(180deg); }
-
-.step-body {
-  display: none;
-  padding: 0 18px 20px;
-  border-top: 1px solid var(--grey-100);
-}
-
-.step.open .step-body { display: block; }
-
-/* Body content */
-.desc {
-  font-size: 13px;
-  color: var(--grey-500);
-  line-height: 1.75;
-  padding: 12px 0 10px;
-  border-left: 3px solid var(--grey-200);
-  padding-left: 14px;
-  margin: 12px 0;
-}
-
-.section-h {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--grey-500);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin: 18px 0 10px;
-}
-
-.section-h::before {
-  content: '';
-  width: 3px;
-  height: 12px;
-  background: var(--blue-500);
-  border-radius: 2px;
-}
-
-/* Code blocks */
-.cw {
-  border: 1px solid var(--grey-200);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin: 8px 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.cb {
-  background: var(--grey-50);
-  border-bottom: 1px solid var(--grey-200);
-  padding: 7px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.cb-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--grey-500);
-  font-weight: 500;
-}
-
-.cp-btn {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--grey-400);
-  border: 1px solid var(--grey-200);
-  border-radius: 4px;
-  padding: 2px 9px;
-  background: var(--white);
-  cursor: pointer;
-  transition: all .15s;
-}
-
-.cp-btn:hover { color: var(--grey-700); border-color: var(--grey-300); }
-.cp-btn.ok { color: var(--green-500); border-color: var(--green-100); background: var(--green-50); }
-
-pre.code {
-  background: #1e2433;
-  color: #c9d4e8;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.85;
-  padding: 16px 18px;
-  overflow-x: auto;
-  margin: 0;
-  white-space: pre;
-}
-
-.cc { color: #4a5878; font-style: italic; }
-.ck { color: #7ec8a0; }
-.cv { color: #e8c87a; }
-.cm { color: #7eb8e8; }
-.cf { color: #ef9f76; }
-.cs { color: #a8d8a8; }
-.cn { color: #88c4f0; }
-
-/* Callouts */
-.callout {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  font-size: 13px;
-  line-height: 1.65;
-  margin: 10px 0;
-  border: 1px solid;
-}
-
-.callout .icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
-.callout.info   { background: var(--blue-50);   border-color: var(--blue-100);   color: #1e40af; }
-.callout.warn   { background: var(--orange-50); border-color: var(--orange-100); color: #92400e; }
-.callout.tip    { background: var(--green-50);  border-color: var(--green-100);  color: #14532d; }
-.callout.danger { background: var(--red-50);    border-color: var(--red-100);    color: #991b1b; }
-.callout.docker { background: var(--cyan-50);   border-color: var(--cyan-100);   color: #164e63; }
-
-/* Checklist */
-.cl { list-style: none; margin: 10px 0; }
-
-.cl li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--grey-100);
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.cl li input[type="checkbox"] {
-  accent-color: var(--green-500);
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  margin-top: 2px;
-  cursor: pointer;
-}
-
-.cl li label { cursor: pointer; color: var(--grey-600, #4b5468); }
-.cl li.done label { text-decoration: line-through; color: var(--grey-300); }
-
-/* Section divider */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 28px 0 20px;
-}
-
-.divider-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--grey-400);
-  white-space: nowrap;
-}
-
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--grey-200);
-}
-
-/* Mapping table */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-  background: var(--white);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--grey-200);
-}
-
-.mtable th {
-  background: var(--grey-50);
-  text-align: left;
-  padding: 10px 14px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--grey-400);
-  font-weight: 500;
-  border-bottom: 1px solid var(--grey-200);
-}
-
-.mtable td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--grey-100);
-  vertical-align: middle;
-  color: var(--grey-700);
-}
-
-.mtable tr:last-child td { border-bottom: none; }
-.mtable tr:hover td { background: var(--grey-50); }
-
-.mtable code {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  background: var(--grey-100);
-  color: var(--grey-700);
-  padding: 2px 7px;
-  border-radius: 4px;
-  border: 1px solid var(--grey-200);
-}
-
-.lv {
-  display: inline-flex;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 99px;
-  border: 1px solid;
-}
-
-.lv-m { color: var(--green-500); border-color: var(--green-100); background: var(--green-50); }
-.lv-i { color: var(--blue-600);  border-color: var(--blue-100);  background: var(--blue-50); }
-.lv-r { color: var(--orange-500); border-color: var(--orange-100); background: var(--orange-50); }
-
-/* Verification grid */
-.verif-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 12px 0;
-}
-
-.verif-card {
-  background: var(--white);
-  border: 1px solid var(--grey-200);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-sm);
-}
-
-.verif-card-layer {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  font-weight: 500;
-  margin-bottom: 10px;
-}
-
-.verif-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--grey-100);
-  font-size: 12px;
-}
-
-.verif-item:last-child { border-bottom: none; }
-
-.verif-check { font-size: 11px; flex-shrink: 0; margin-top: 1px; }
-.verif-label { color: var(--grey-600, #4b5468); flex: 1; }
-.verif-cmd   { font-family: var(--font-mono); font-size: 10px; color: var(--blue-600); white-space: nowrap; }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .sidebar { display: none; }
-  .main { padding: 24px 20px; max-width: 100%; }
-  .diag-flow { flex-direction: column; }
-  .diag-arrow { transform: rotate(90deg); }
-  .verif-grid { grid-template-columns: 1fr; }
-  .diag-stats { grid-template-columns: 1fr 1fr; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mise en Situation — Nginx · Docker · App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────── */
+    :root {
+      --white: #ffffff;
+      --grey-50: #f8f9fb;
+      --grey-100: #f0f2f5;
+      --grey-200: #e3e7ed;
+      --grey-300: #c8cfda;
+      --grey-400: #9aa3b3;
+      --grey-500: #6b7587;
+      --grey-700: #3a4155;
+      --grey-900: #1a1f2e;
+
+      --blue-50: #eff5ff;
+      --blue-100: #ddeaff;
+      --blue-500: #2563eb;
+      --blue-600: #1d56d6;
+
+      --green-50: #f0faf4;
+      --green-100: #d6f5e3;
+      --green-500: #16a34a;
+
+      --orange-50: #fff7ed;
+      --orange-100: #fde8cc;
+      --orange-500: #ea7216;
+
+      --red-50: #fff1f1;
+      --red-100: #fdd;
+      --red-500: #dc2626;
+
+      --cyan-50: #ecfeff;
+      --cyan-100: #cffafe;
+      --cyan-500: #0891b2;
+
+      --purple-50: #faf5ff;
+      --purple-500: #7c3aed;
+
+      /* Layer colours */
+      --c-internet: var(--red-500);
+      --c-ufw: var(--orange-500);
+      --c-nginx: var(--blue-500);
+      --c-docker: var(--cyan-500);
+      --c-app: var(--green-500);
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'DM Mono', 'Courier New', monospace;
+
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 14px;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, .07), 0 1px 2px rgba(0, 0, 0, .04);
+      --shadow: 0 4px 12px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .05);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, .1), 0 2px 8px rgba(0, 0, 0, .06);
+    }
+
+    /* ─── RESET & BASE ───────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--grey-50);
+      color: var(--grey-900);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR ────────────────────────────────────────── */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: var(--white);
+      border-right: 1px solid var(--grey-200);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--grey-200);
+      border-radius: 4px;
+    }
+
+    /* Brand */
+    .sb-brand {
+      padding: 24px 20px 18px;
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .sb-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--c-docker);
+      margin-bottom: 8px;
+    }
+
+    .sb-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--grey-900);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .sb-subtitle {
+      font-size: 11px;
+      color: var(--grey-400);
+    }
+
+    /* Progress */
+    .sb-progress {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .sb-prog-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--grey-400);
+      margin-bottom: 7px;
+    }
+
+    .sb-prog-row strong {
+      color: var(--green-500);
+    }
+
+    .prog-track {
+      height: 4px;
+      background: var(--grey-100);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-500), #22c55e);
+      border-radius: 99px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* Architecture mini */
+    .sb-arch {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .sb-arch-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--grey-400);
+      margin-bottom: 10px;
+    }
+
+    .arch-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .arch-layer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--grey-50);
+      border: 1px solid var(--grey-100);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--grey-700);
+      transition: background .15s;
+    }
+
+    .arch-layer:hover {
+      background: var(--grey-100);
+    }
+
+    .arch-pip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .arch-connector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 18px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--grey-400);
+    }
+
+    .arch-connector::before {
+      content: '';
+      width: 1px;
+      height: 12px;
+      background: var(--grey-200);
+      flex-shrink: 0;
+    }
+
+    /* Nav */
+    .sb-nav {
+      flex: 1;
+      padding: 10px 0 20px;
+    }
+
+    .nav-group {
+      padding: 10px 20px 3px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--grey-400);
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 20px;
+      font-size: 12.5px;
+      color: var(--grey-500);
+      border-left: 2px solid transparent;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .nav-link:hover {
+      color: var(--grey-900);
+      background: var(--grey-50);
+    }
+
+    .nav-link.active {
+      color: var(--blue-600);
+      background: var(--blue-50);
+      border-left-color: var(--blue-500);
+    }
+
+    .nav-indicator {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid var(--grey-200);
+      background: var(--white);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+      font-weight: 700;
+      color: transparent;
+      transition: all .2s;
+    }
+
+    .nav-link.done .nav-indicator {
+      background: var(--green-500);
+      border-color: var(--green-500);
+      color: var(--white);
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--grey-300);
+    }
+
+    /* ─── MAIN ───────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      max-width: 900px;
+      padding: 48px 56px 96px;
+    }
+
+    /* ─── PAGE HEADER ────────────────────────────────────── */
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .ptag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid;
+      font-weight: 500;
+    }
+
+    .ptag-nginx {
+      color: var(--blue-600);
+      border-color: var(--blue-100);
+      background: var(--blue-50);
+    }
+
+    .ptag-docker {
+      color: var(--cyan-500);
+      border-color: var(--cyan-100);
+      background: var(--cyan-50);
+    }
+
+    .ptag-app {
+      color: var(--green-500);
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    .ptag-anssi {
+      color: var(--purple-500);
+      border-color: #e9d5ff;
+      background: var(--purple-50);
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--grey-900);
+      letter-spacing: -.02em;
+      margin-bottom: 12px;
+    }
+
+    .page-title em {
+      font-style: italic;
+      color: var(--blue-600);
+    }
+
+    .page-desc {
+      font-size: 14.5px;
+      color: var(--grey-500);
+      max-width: 620px;
+      line-height: 1.75;
+      margin-bottom: 20px;
+    }
+
+    .page-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--grey-500);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ─── TABS ───────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--grey-100);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-bottom: 36px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, .06);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px 10px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--grey-500);
+      transition: all .15s;
+    }
+
+    .tab-btn:hover {
+      color: var(--grey-700);
+    }
+
+    .tab-btn.active {
+      background: var(--white);
+      color: var(--grey-900);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tc {
+      display: none;
+    }
+
+    .tc.active {
+      display: block;
+    }
+
+    /* ─── ARCHITECTURE DIAGRAM ───────────────────────────── */
+    .arch-diagram {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px 20px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .diag-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--grey-400);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .diag-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+    }
+
+    .diag-node {
+      flex: 1;
+      min-width: 140px;
+      border: 1.5px solid;
+      border-radius: var(--radius);
+      padding: 14px 14px 12px;
+      background: var(--white);
+      position: relative;
+    }
+
+    .diag-node-layer {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .diag-node-name {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .diag-node-desc {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--grey-500);
+    }
+
+    .diag-node-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 8px;
+    }
+
+    .diag-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      border: 1px solid;
+    }
+
+    .dn-internet {
+      border-color: #fca5a5;
+      background: var(--red-50);
+    }
+
+    .dn-internet .diag-node-layer,
+    .dn-internet .diag-node-name {
+      color: var(--c-internet);
+    }
+
+    .dn-internet .diag-tag {
+      color: var(--c-internet);
+      border-color: #fca5a5;
+      background: var(--red-50);
+    }
+
+    .dn-ufw {
+      border-color: #fdba74;
+      background: var(--orange-50);
+    }
+
+    .dn-ufw .diag-node-layer,
+    .dn-ufw .diag-node-name {
+      color: var(--c-ufw);
+    }
+
+    .dn-ufw .diag-tag {
+      color: var(--c-ufw);
+      border-color: #fdba74;
+      background: var(--orange-50);
+    }
+
+    .dn-nginx {
+      border-color: var(--blue-100);
+      background: var(--blue-50);
+    }
+
+    .dn-nginx .diag-node-layer,
+    .dn-nginx .diag-node-name {
+      color: var(--c-nginx);
+    }
+
+    .dn-nginx .diag-tag {
+      color: var(--c-nginx);
+      border-color: var(--blue-100);
+      background: var(--blue-50);
+    }
+
+    .dn-docker {
+      border-color: var(--cyan-100);
+      background: var(--cyan-50);
+    }
+
+    .dn-docker .diag-node-layer,
+    .dn-docker .diag-node-name {
+      color: var(--c-docker);
+    }
+
+    .dn-docker .diag-tag {
+      color: var(--c-docker);
+      border-color: var(--cyan-100);
+      background: var(--cyan-50);
+    }
+
+    .dn-app {
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    .dn-app .diag-node-layer,
+    .dn-app .diag-node-name {
+      color: var(--c-app);
+    }
+
+    .dn-app .diag-tag {
+      color: var(--c-app);
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    .diag-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+      flex-shrink: 0;
+      gap: 2px;
+    }
+
+    .diag-arrow-line {
+      width: 28px;
+      height: 2px;
+      background: var(--grey-200);
+      position: relative;
+    }
+
+    .diag-arrow-line::after {
+      content: '▶';
+      position: absolute;
+      right: -8px;
+      top: -6px;
+      font-size: 8px;
+      color: var(--grey-300);
+    }
+
+    .diag-arrow-port {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--c-ufw);
+      font-weight: 600;
+    }
+
+    .diag-arrow-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--grey-400);
+    }
+
+    /* Stats row */
+    .diag-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--grey-100);
+    }
+
+    .diag-stat {
+      background: var(--grey-50);
+      border: 1px solid var(--grey-100);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+
+    .diag-stat-label {
+      font-size: 10px;
+      color: var(--grey-400);
+      margin-bottom: 3px;
+      font-family: var(--font-mono);
+    }
+
+    .diag-stat-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green-500);
+    }
+
+    /* ─── STEP BLOCKS ────────────────────────────────────── */
+    .step {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: box-shadow .2s, border-color .2s;
+    }
+
+    .step:hover {
+      border-color: var(--grey-300);
+    }
+
+    .step.open {
+      border-color: var(--grey-300);
+      box-shadow: var(--shadow);
+    }
+
+    .step-hdr {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .15s;
+    }
+
+    .step-hdr:hover {
+      background: var(--grey-50);
+    }
+
+    /* Checkbox */
+    .step-cb {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--grey-300);
+      background: var(--white);
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: transparent;
+      transition: all .2s;
+    }
+
+    .step-cb.done {
+      background: var(--green-500);
+      border-color: var(--green-500);
+      color: var(--white);
+    }
+
+    /* Badges */
+    .step-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 99px;
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+
+    .b-m {
+      color: var(--green-500);
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    .b-i {
+      color: var(--blue-600);
+      border-color: var(--blue-100);
+      background: var(--blue-50);
+    }
+
+    .b-r {
+      color: var(--orange-500);
+      border-color: var(--orange-100);
+      background: var(--orange-50);
+    }
+
+    .b-ng {
+      color: var(--blue-600);
+      border-color: var(--blue-100);
+      background: var(--blue-50);
+    }
+
+    .b-dk {
+      color: var(--cyan-500);
+      border-color: var(--cyan-100);
+      background: var(--cyan-50);
+    }
+
+    .b-app {
+      color: var(--green-500);
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    .b-step {
+      color: var(--purple-500);
+      border-color: #e9d5ff;
+      background: var(--purple-50);
+    }
+
+    .step-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--grey-800, #2d3347);
+      flex: 1;
+    }
+
+    .step-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--grey-400);
+      flex-shrink: 0;
+    }
+
+    .step-chev {
+      color: var(--grey-300);
+      font-size: 10px;
+      transition: transform .2s;
+      flex-shrink: 0;
+    }
+
+    .step.open .step-chev {
+      transform: rotate(180deg);
+    }
+
+    .step-body {
+      display: none;
+      padding: 0 18px 20px;
+      border-top: 1px solid var(--grey-100);
+    }
+
+    .step.open .step-body {
+      display: block;
+    }
+
+    /* Body content */
+    .desc {
+      font-size: 13px;
+      color: var(--grey-500);
+      line-height: 1.75;
+      padding: 12px 0 10px;
+      border-left: 3px solid var(--grey-200);
+      padding-left: 14px;
+      margin: 12px 0;
+    }
+
+    .section-h {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--grey-500);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin: 18px 0 10px;
+    }
+
+    .section-h::before {
+      content: '';
+      width: 3px;
+      height: 12px;
+      background: var(--blue-500);
+      border-radius: 2px;
+    }
+
+    /* Code blocks */
+    .cw {
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 8px 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .cb {
+      background: var(--grey-50);
+      border-bottom: 1px solid var(--grey-200);
+      padding: 7px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cb-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--grey-500);
+      font-weight: 500;
+    }
+
+    .cp-btn {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--grey-400);
+      border: 1px solid var(--grey-200);
+      border-radius: 4px;
+      padding: 2px 9px;
+      background: var(--white);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .cp-btn:hover {
+      color: var(--grey-700);
+      border-color: var(--grey-300);
+    }
+
+    .cp-btn.ok {
+      color: var(--green-500);
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    pre.code {
+      background: #1e2433;
+      color: #c9d4e8;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.85;
+      padding: 16px 18px;
+      overflow-x: auto;
+      margin: 0;
+      white-space: pre;
+    }
+
+    .cc {
+      color: #4a5878;
+      font-style: italic;
+    }
+
+    .ck {
+      color: #7ec8a0;
+    }
+
+    .cv {
+      color: #e8c87a;
+    }
+
+    .cm {
+      color: #7eb8e8;
+    }
+
+    .cf {
+      color: #ef9f76;
+    }
+
+    .cs {
+      color: #a8d8a8;
+    }
+
+    .cn {
+      color: #88c4f0;
+    }
+
+    /* Callouts */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 10px 0;
+      border: 1px solid;
+    }
+
+    .callout .icon {
+      flex-shrink: 0;
+      font-size: 15px;
+      margin-top: 1px;
+    }
+
+    .callout.info {
+      background: var(--blue-50);
+      border-color: var(--blue-100);
+      color: #1e40af;
+    }
+
+    .callout.warn {
+      background: var(--orange-50);
+      border-color: var(--orange-100);
+      color: #92400e;
+    }
+
+    .callout.tip {
+      background: var(--green-50);
+      border-color: var(--green-100);
+      color: #14532d;
+    }
+
+    .callout.danger {
+      background: var(--red-50);
+      border-color: var(--red-100);
+      color: #991b1b;
+    }
+
+    .callout.docker {
+      background: var(--cyan-50);
+      border-color: var(--cyan-100);
+      color: #164e63;
+    }
+
+    /* Checklist */
+    .cl {
+      list-style: none;
+      margin: 10px 0;
+    }
+
+    .cl li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--grey-100);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .cl li input[type="checkbox"] {
+      accent-color: var(--green-500);
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      cursor: pointer;
+    }
+
+    .cl li label {
+      cursor: pointer;
+      color: var(--grey-600, #4b5468);
+    }
+
+    .cl li.done label {
+      text-decoration: line-through;
+      color: var(--grey-300);
+    }
+
+    /* Section divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 28px 0 20px;
+    }
+
+    .divider-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--grey-400);
+      white-space: nowrap;
+    }
+
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--grey-200);
+    }
+
+    /* Mapping table */
+    .mtable {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      background: var(--white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--grey-200);
+    }
+
+    .mtable th {
+      background: var(--grey-50);
+      text-align: left;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--grey-400);
+      font-weight: 500;
+      border-bottom: 1px solid var(--grey-200);
+    }
+
+    .mtable td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--grey-100);
+      vertical-align: middle;
+      color: var(--grey-700);
+    }
+
+    .mtable tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mtable tr:hover td {
+      background: var(--grey-50);
+    }
+
+    .mtable code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--grey-100);
+      color: var(--grey-700);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid var(--grey-200);
+    }
+
+    .lv {
+      display: inline-flex;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid;
+    }
+
+    .lv-m {
+      color: var(--green-500);
+      border-color: var(--green-100);
+      background: var(--green-50);
+    }
+
+    .lv-i {
+      color: var(--blue-600);
+      border-color: var(--blue-100);
+      background: var(--blue-50);
+    }
+
+    .lv-r {
+      color: var(--orange-500);
+      border-color: var(--orange-100);
+      background: var(--orange-50);
+    }
+
+    /* Verification grid */
+    .verif-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .verif-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .verif-card-layer {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .verif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--grey-100);
+      font-size: 12px;
+    }
+
+    .verif-item:last-child {
+      border-bottom: none;
+    }
+
+    .verif-check {
+      font-size: 11px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .verif-label {
+      color: var(--grey-600, #4b5468);
+      flex: 1;
+    }
+
+    .verif-cmd {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--blue-600);
+      white-space: nowrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        padding: 24px 20px;
+        max-width: 100%;
+      }
+
+      .diag-flow {
+        flex-direction: column;
+      }
+
+      .diag-arrow {
+        transform: rotate(90deg);
+      }
+
+      .verif-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .diag-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="layout">
+  <div class="layout">
 
-<!-- ═══════════════ SIDEBAR ═══════════════ -->
-<aside class="sidebar">
-  <div class="sb-brand">
-    <div class="sb-eyebrow">🖥 Mise en situation</div>
-    <div class="sb-title">Nginx · Docker · App</div>
-    <div class="sb-subtitle">ANSSI-BP-028 v2.0 · Guide DevSecOps</div>
-  </div>
-
-  <div class="sb-progress">
-    <div class="sb-prog-row">Progression <strong id="prog-txt">0/25</strong></div>
-    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-  </div>
-
-  <div class="sb-arch">
-    <div class="sb-arch-label">Architecture cible</div>
-    <div class="arch-stack">
-      <div class="arch-layer">
-        <div class="arch-pip" style="background:var(--c-internet)"></div>
-        Internet
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <aside class="sidebar">
+      <div class="sb-brand">
+        <div class="sb-eyebrow">🖥 Mise en situation</div>
+        <div class="sb-title">Nginx · Docker · App</div>
+        <div class="sb-subtitle">ANSSI-BP-028 v2.0 · Guide DevSecOps</div>
       </div>
-      <div class="arch-connector">UFW 80/443</div>
-      <div class="arch-layer">
-        <div class="arch-pip" style="background:var(--c-nginx)"></div>
-        Nginx reverse proxy
+
+      <div class="sb-progress">
+        <div class="sb-prog-row">Progression <strong id="prog-txt">0/25</strong></div>
+        <div class="prog-track">
+          <div class="prog-fill" id="prog-fill"></div>
+        </div>
       </div>
-      <div class="arch-connector">127.0.0.1:3000</div>
-      <div class="arch-layer">
-        <div class="arch-pip" style="background:var(--c-docker)"></div>
-        Docker daemon
+
+      <div class="sb-arch">
+        <div class="sb-arch-label">Architecture cible</div>
+        <div class="arch-stack">
+          <div class="arch-layer">
+            <div class="arch-pip" style="background:var(--c-internet)"></div>
+            Internet
+          </div>
+          <div class="arch-connector">UFW 80/443</div>
+          <div class="arch-layer">
+            <div class="arch-pip" style="background:var(--c-nginx)"></div>
+            Nginx reverse proxy
+          </div>
+          <div class="arch-connector">127.0.0.1:3000</div>
+          <div class="arch-layer">
+            <div class="arch-pip" style="background:var(--c-docker)"></div>
+            Docker daemon
+          </div>
+          <div class="arch-connector">bridge app-net</div>
+          <div class="arch-layer">
+            <div class="arch-pip" style="background:var(--c-app)"></div>
+            Container App
+          </div>
+        </div>
       </div>
-      <div class="arch-connector">bridge app-net</div>
-      <div class="arch-layer">
-        <div class="arch-pip" style="background:var(--c-app)"></div>
-        Container App
+
+      <nav class="sb-nav">
+        <div class="nav-group">Introduction</div>
+        <a class="nav-link active" href="./index.html">
+          <div class="nav-indicator">✓</div>
+          Accueil
+        </a>
+
+        <div class="nav-group">Architecture</div>
+        <a class="nav-link active" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>
+          Schéma & mapping ANSSI
+        </a>
+
+        <div class="nav-group">Séance 1 — Socle</div>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Audit Lynis initial
+          <span class="nav-badge">20'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Socle ANSSI niveau M
+          <span class="nav-badge">35'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>UFW adapté Docker
+          <span class="nav-badge">20'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Docker — install officielle
+          <span class="nav-badge">25'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Docker daemon.json
+          <span class="nav-badge">25'</span>
+        </a>
+
+        <div class="nav-group">Séance 2 — Services</div>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Nginx — durcissement
+          <span class="nav-badge">30'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Nginx — reverse proxy + TLS
+          <span class="nav-badge">25'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Dockerfile sécurisé
+          <span class="nav-badge">25'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>docker-compose & isolation
+          <span class="nav-badge">20'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Journalisation auditd
+          <span class="nav-badge">25'</span>
+        </a>
+        <a class="nav-link" onclick="activateNav(this)">
+          <div class="nav-indicator">✓</div>Vérification finale
+          <span class="nav-badge">20'</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <main class="main">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div class="page-tags">
+          <span class="ptag ptag-anssi">ANSSI-BP-028 v2.0</span>
+          <span class="ptag ptag-nginx">Nginx Reverse Proxy</span>
+          <span class="ptag ptag-docker">Docker</span>
+          <span class="ptag ptag-app">Application conteneurisée</span>
+        </div>
+        <h1 class="page-title">Mise en situation<br><em>Nginx · Docker · App</em></h1>
+        <p class="page-desc">Configuration complète d'un serveur de production selon l'ANSSI-BP-028 : nginx en reverse
+          proxy exposé sur Internet, daemon Docker durci, application déployée en container isolé. Chaque recommandation
+          ANSSI est appliquée dans ce contexte opérationnel.</p>
+        <div class="page-chips">
+          <span class="chip">⏱ 2 × 3 heures</span>
+          <span class="chip">🌐 Serveur exposé Internet — niveaux M → R</span>
+          <span class="chip">R35 · R62–R66 · R72–R73 · R78–R80</span>
+          <span class="chip">Debian 12 / Ubuntu 22.04</span>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <nav class="sb-nav">
-    <div class="nav-group">Architecture</div>
-    <a class="nav-link active" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>
-      Schéma & mapping ANSSI
-    </a>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('arch', this)">Architecture</button>
+        <button class="tab-btn" onclick="switchTab('s1', this)">Séance 1 — Socle</button>
+        <button class="tab-btn" onclick="switchTab('s2', this)">Séance 2 — Services</button>
+        <button class="tab-btn" onclick="switchTab('verif', this)">Vérification</button>
+      </div>
 
-    <div class="nav-group">Séance 1 — Socle</div>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Audit Lynis initial
-      <span class="nav-badge">20'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Socle ANSSI niveau M
-      <span class="nav-badge">35'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>UFW adapté Docker
-      <span class="nav-badge">20'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Docker — install officielle
-      <span class="nav-badge">25'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Docker daemon.json
-      <span class="nav-badge">25'</span>
-    </a>
+      <!-- ──── ARCHITECTURE ──── -->
+      <div id="tab-arch" class="tc active">
 
-    <div class="nav-group">Séance 2 — Services</div>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Nginx — durcissement
-      <span class="nav-badge">30'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Nginx — reverse proxy + TLS
-      <span class="nav-badge">25'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Dockerfile sécurisé
-      <span class="nav-badge">25'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>docker-compose & isolation
-      <span class="nav-badge">20'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Journalisation auditd
-      <span class="nav-badge">25'</span>
-    </a>
-    <a class="nav-link" onclick="activateNav(this)">
-      <div class="nav-indicator">✓</div>Vérification finale
-      <span class="nav-badge">20'</span>
-    </a>
-  </nav>
-</aside>
+        <div class="arch-diagram">
+          <div class="diag-title">Flux réseau et périmètre de sécurité — architecture cible</div>
+          <div class="diag-flow">
 
-<!-- ═══════════════ MAIN ═══════════════ -->
-<main class="main">
+            <div class="diag-node dn-internet">
+              <div class="diag-node-layer">Couche 0</div>
+              <div class="diag-node-name">🌐 Internet</div>
+              <div class="diag-node-desc">Trafic non maîtrisé. Source d'attaques. R78, R79.</div>
+              <div class="diag-node-tags">
+                <span class="diag-tag">Hostile</span>
+                <span class="diag-tag">HTTPS :443</span>
+              </div>
+            </div>
 
-  <!-- Header -->
-  <div class="page-header">
-    <div class="page-tags">
-      <span class="ptag ptag-anssi">ANSSI-BP-028 v2.0</span>
-      <span class="ptag ptag-nginx">Nginx Reverse Proxy</span>
-      <span class="ptag ptag-docker">Docker</span>
-      <span class="ptag ptag-app">Application conteneurisée</span>
-    </div>
-    <h1 class="page-title">Mise en situation<br><em>Nginx · Docker · App</em></h1>
-    <p class="page-desc">Configuration complète d'un serveur de production selon l'ANSSI-BP-028 : nginx en reverse proxy exposé sur Internet, daemon Docker durci, application déployée en container isolé. Chaque recommandation ANSSI est appliquée dans ce contexte opérationnel.</p>
-    <div class="page-chips">
-      <span class="chip">⏱ 2 × 3 heures</span>
-      <span class="chip">🌐 Serveur exposé Internet — niveaux M → R</span>
-      <span class="chip">R35 · R62–R66 · R72–R73 · R78–R80</span>
-      <span class="chip">Debian 12 / Ubuntu 22.04</span>
-    </div>
-  </div>
+            <div class="diag-arrow">
+              <div class="diag-arrow-line"></div>
+              <div class="diag-arrow-port">UFW</div>
+              <div class="diag-arrow-label">R44/R80</div>
+            </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('arch', this)">Architecture</button>
-    <button class="tab-btn" onclick="switchTab('s1', this)">Séance 1 — Socle</button>
-    <button class="tab-btn" onclick="switchTab('s2', this)">Séance 2 — Services</button>
-    <button class="tab-btn" onclick="switchTab('verif', this)">Vérification</button>
-  </div>
+            <div class="diag-node dn-nginx">
+              <div class="diag-node-layer">Couche 1 — Reverse proxy</div>
+              <div class="diag-node-name">⚙ Nginx</div>
+              <div class="diag-node-desc">Seul service exposé. TLS, headers, rate limit. Compte www-data. Systemd
+                sandbox.</div>
+              <div class="diag-node-tags">
+                <span class="diag-tag">www-data</span>
+                <span class="diag-tag">TLS 1.3</span>
+                <span class="diag-tag">HSTS</span>
+              </div>
+            </div>
 
-  <!-- ──── ARCHITECTURE ──── -->
-  <div id="tab-arch" class="tc active">
+            <div class="diag-arrow">
+              <div class="diag-arrow-line"></div>
+              <div class="diag-arrow-port">127.0.0.1</div>
+              <div class="diag-arrow-label">:3000</div>
+            </div>
 
-    <div class="arch-diagram">
-      <div class="diag-title">Flux réseau et périmètre de sécurité — architecture cible</div>
-      <div class="diag-flow">
+            <div class="diag-node dn-docker">
+              <div class="diag-node-layer">Couche 2 — Runtime</div>
+              <div class="diag-node-name">🐳 Docker</div>
+              <div class="diag-node-desc">Daemon durci. User namespace. Socket protégée. Réseau bridge isolé.</div>
+              <div class="diag-node-tags">
+                <span class="diag-tag">userns-remap</span>
+                <span class="diag-tag">no-new-priv</span>
+              </div>
+            </div>
 
-        <div class="diag-node dn-internet">
-          <div class="diag-node-layer">Couche 0</div>
-          <div class="diag-node-name">🌐 Internet</div>
-          <div class="diag-node-desc">Trafic non maîtrisé. Source d'attaques. R78, R79.</div>
-          <div class="diag-node-tags">
-            <span class="diag-tag">Hostile</span>
-            <span class="diag-tag">HTTPS :443</span>
+            <div class="diag-arrow">
+              <div class="diag-arrow-line"></div>
+              <div class="diag-arrow-port">app-net</div>
+              <div class="diag-arrow-label">bridge</div>
+            </div>
+
+            <div class="diag-node dn-app">
+              <div class="diag-node-layer">Couche 3 — Application</div>
+              <div class="diag-node-name">📦 Container</div>
+              <div class="diag-node-desc">UID 1001 non-root. Filesystem read-only. cap_drop ALL. Mémoire limitée.</div>
+              <div class="diag-node-tags">
+                <span class="diag-tag">UID 1001</span>
+                <span class="diag-tag">read-only</span>
+                <span class="diag-tag">cap_drop ALL</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="diag-stats">
+            <div class="diag-stat">
+              <div class="diag-stat-label">Surface exposée</div>
+              <div class="diag-stat-value">Nginx seul</div>
+            </div>
+            <div class="diag-stat">
+              <div class="diag-stat-label">App joignable depuis net</div>
+              <div class="diag-stat-value">Non — 127.0.0.1</div>
+            </div>
+            <div class="diag-stat">
+              <div class="diag-stat-label">Container tourne root</div>
+              <div class="diag-stat-value">Non — UID 1001</div>
+            </div>
+            <div class="diag-stat">
+              <div class="diag-stat-label">Docker socket exposée</div>
+              <div class="diag-stat-value">Non — groupe restreint</div>
+            </div>
           </div>
         </div>
 
-        <div class="diag-arrow">
-          <div class="diag-arrow-line"></div>
-          <div class="diag-arrow-port">UFW</div>
-          <div class="diag-arrow-label">R44/R80</div>
+        <div class="divider"><span class="divider-label">Mapping recommandations ANSSI pour cette architecture</span>
         </div>
 
-        <div class="diag-node dn-nginx">
-          <div class="diag-node-layer">Couche 1 — Reverse proxy</div>
-          <div class="diag-node-name">⚙ Nginx</div>
-          <div class="diag-node-desc">Seul service exposé. TLS, headers, rate limit. Compte www-data. Systemd sandbox.</div>
-          <div class="diag-node-tags">
-            <span class="diag-tag">www-data</span>
-            <span class="diag-tag">TLS 1.3</span>
-            <span class="diag-tag">HSTS</span>
+        <table class="mtable">
+          <thead>
+            <tr>
+              <th>Reco</th>
+              <th>Niveau</th>
+              <th>Application concrète</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>R35</strong></td>
+              <td><span class="lv lv-i">M·I</span></td>
+              <td>Compte <code>www-data</code> dédié nginx. <code>appuser UID 1001</code> dans le container. Aucun
+                partage de compte nobody.</td>
+            </tr>
+            <tr>
+              <td><strong>R62</strong></td>
+              <td><span class="lv lv-m">M</span></td>
+              <td>Seuls nginx, docker, ssh, auditd actifs. Avahi, CUPS, Bluetooth désactivés.</td>
+            </tr>
+            <tr>
+              <td><strong>R63</strong></td>
+              <td><span class="lv lv-i">M·I</span></td>
+              <td>Nginx sans <code>server_tokens</code>, sans autoindex, sans méthodes inutiles (TRACE).</td>
+            </tr>
+            <tr>
+              <td><strong>R64</strong></td>
+              <td><span class="lv lv-r">M·I·R</span></td>
+              <td>Nginx : <code>CAP_NET_BIND_SERVICE</code> seulement. Container : <code>cap_drop: ALL</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>R65</strong></td>
+              <td><span class="lv lv-r">M·I·R</span></td>
+              <td>Nginx sandboxé par systemd (ProtectSystem, PrivateTmp). App isolée via namespaces Docker.</td>
+            </tr>
+            <tr>
+              <td><strong>R66</strong></td>
+              <td><span class="lv lv-r">M·I·R·E</span></td>
+              <td>daemon.json : <code>userns-remap</code>, <code>no-new-privileges</code>, profil seccomp par défaut,
+                journald.</td>
+            </tr>
+            <tr>
+              <td><strong>R72</strong></td>
+              <td><span class="lv lv-r">M·I·R</span></td>
+              <td>Journaux nginx dans <code>/var/log/nginx/</code>. Journaux Docker via journald. Un journal par
+                service.</td>
+            </tr>
+            <tr>
+              <td><strong>R78</strong></td>
+              <td><span class="lv lv-r">M·I·R</span></td>
+              <td>Nginx dans son processus isolé. App dans un réseau Docker bridge dédié <code>app-net</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>R79</strong></td>
+              <td><span class="lv lv-i">M·I</span></td>
+              <td>Nginx : headers HSTS/CSP/X-Frame, TLS 1.3, rate limiting, logs access/error surveillés.</td>
+            </tr>
+            <tr>
+              <td><strong>R80</strong></td>
+              <td><span class="lv lv-m">M</span></td>
+              <td>Port 3000 lié sur <code>127.0.0.1</code> uniquement — invisible depuis Internet.</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div><!-- /arch -->
+
+      <!-- ──── SÉANCE 1 ──── -->
+      <div id="tab-s1" class="tc">
+
+        <!-- Audit Lynis -->
+        <div class="step open">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-step">Étape 1</span>
+            <span class="step-title">Audit initial Lynis — mesurer avant de toucher</span>
+            <span class="step-time">20 min</span>
+            <span class="step-chev">▾</span>
           </div>
-        </div>
-
-        <div class="diag-arrow">
-          <div class="diag-arrow-line"></div>
-          <div class="diag-arrow-port">127.0.0.1</div>
-          <div class="diag-arrow-label">:3000</div>
-        </div>
-
-        <div class="diag-node dn-docker">
-          <div class="diag-node-layer">Couche 2 — Runtime</div>
-          <div class="diag-node-name">🐳 Docker</div>
-          <div class="diag-node-desc">Daemon durci. User namespace. Socket protégée. Réseau bridge isolé.</div>
-          <div class="diag-node-tags">
-            <span class="diag-tag">userns-remap</span>
-            <span class="diag-tag">no-new-priv</span>
-          </div>
-        </div>
-
-        <div class="diag-arrow">
-          <div class="diag-arrow-line"></div>
-          <div class="diag-arrow-port">app-net</div>
-          <div class="diag-arrow-label">bridge</div>
-        </div>
-
-        <div class="diag-node dn-app">
-          <div class="diag-node-layer">Couche 3 — Application</div>
-          <div class="diag-node-name">📦 Container</div>
-          <div class="diag-node-desc">UID 1001 non-root. Filesystem read-only. cap_drop ALL. Mémoire limitée.</div>
-          <div class="diag-node-tags">
-            <span class="diag-tag">UID 1001</span>
-            <span class="diag-tag">read-only</span>
-            <span class="diag-tag">cap_drop ALL</span>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="diag-stats">
-        <div class="diag-stat">
-          <div class="diag-stat-label">Surface exposée</div>
-          <div class="diag-stat-value">Nginx seul</div>
-        </div>
-        <div class="diag-stat">
-          <div class="diag-stat-label">App joignable depuis net</div>
-          <div class="diag-stat-value">Non — 127.0.0.1</div>
-        </div>
-        <div class="diag-stat">
-          <div class="diag-stat-label">Container tourne root</div>
-          <div class="diag-stat-value">Non — UID 1001</div>
-        </div>
-        <div class="diag-stat">
-          <div class="diag-stat-label">Docker socket exposée</div>
-          <div class="diag-stat-value">Non — groupe restreint</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"><span class="divider-label">Mapping recommandations ANSSI pour cette architecture</span></div>
-
-    <table class="mtable">
-      <thead><tr><th>Reco</th><th>Niveau</th><th>Application concrète</th></tr></thead>
-      <tbody>
-        <tr><td><strong>R35</strong></td><td><span class="lv lv-i">M·I</span></td><td>Compte <code>www-data</code> dédié nginx. <code>appuser UID 1001</code> dans le container. Aucun partage de compte nobody.</td></tr>
-        <tr><td><strong>R62</strong></td><td><span class="lv lv-m">M</span></td><td>Seuls nginx, docker, ssh, auditd actifs. Avahi, CUPS, Bluetooth désactivés.</td></tr>
-        <tr><td><strong>R63</strong></td><td><span class="lv lv-i">M·I</span></td><td>Nginx sans <code>server_tokens</code>, sans autoindex, sans méthodes inutiles (TRACE).</td></tr>
-        <tr><td><strong>R64</strong></td><td><span class="lv lv-r">M·I·R</span></td><td>Nginx : <code>CAP_NET_BIND_SERVICE</code> seulement. Container : <code>cap_drop: ALL</code>.</td></tr>
-        <tr><td><strong>R65</strong></td><td><span class="lv lv-r">M·I·R</span></td><td>Nginx sandboxé par systemd (ProtectSystem, PrivateTmp). App isolée via namespaces Docker.</td></tr>
-        <tr><td><strong>R66</strong></td><td><span class="lv lv-r">M·I·R·E</span></td><td>daemon.json : <code>userns-remap</code>, <code>no-new-privileges</code>, profil seccomp par défaut, journald.</td></tr>
-        <tr><td><strong>R72</strong></td><td><span class="lv lv-r">M·I·R</span></td><td>Journaux nginx dans <code>/var/log/nginx/</code>. Journaux Docker via journald. Un journal par service.</td></tr>
-        <tr><td><strong>R78</strong></td><td><span class="lv lv-r">M·I·R</span></td><td>Nginx dans son processus isolé. App dans un réseau Docker bridge dédié <code>app-net</code>.</td></tr>
-        <tr><td><strong>R79</strong></td><td><span class="lv lv-i">M·I</span></td><td>Nginx : headers HSTS/CSP/X-Frame, TLS 1.3, rate limiting, logs access/error surveillés.</td></tr>
-        <tr><td><strong>R80</strong></td><td><span class="lv lv-m">M</span></td><td>Port 3000 lié sur <code>127.0.0.1</code> uniquement — invisible depuis Internet.</td></tr>
-      </tbody>
-    </table>
-
-  </div><!-- /arch -->
-
-  <!-- ──── SÉANCE 1 ──── -->
-  <div id="tab-s1" class="tc">
-
-    <!-- Audit Lynis -->
-    <div class="step open">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-step">Étape 1</span>
-        <span class="step-title">Audit initial Lynis — mesurer avant de toucher</span>
-        <span class="step-time">20 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <p class="desc">Un serveur fraîchement installé avec nginx et Docker obtient environ 50–60. Objectif après durcissement complet : 80+. Notez le score de départ.</p>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Installation et audit</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo apt update</span> && <span class="cm">sudo apt install lynis</span>
+          <div class="step-body">
+            <p class="desc">Un serveur fraîchement installé avec nginx et Docker obtient environ 50–60. Objectif après
+              durcissement complet : 80+. Notez le score de départ.</p>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Installation et audit</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo apt update</span> && <span class="cm">sudo apt install lynis</span>
 <span class="cm">sudo lynis audit system</span>
 <span class="cm">grep "hardening_index" /var/log/lynis-report.dat</span></pre>
+            </div>
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>Score initial noté (ex: 54)</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>3 warnings prioritaires identifiés dans le
+                  rapport</label></li>
+            </ul>
+          </div>
         </div>
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>Score initial noté (ex: 54)</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>3 warnings prioritaires identifiés dans le rapport</label></li>
-        </ul>
-      </div>
-    </div>
 
-    <!-- Socle ANSSI -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-m">M · Socle</span>
-        <span class="step-title">Socle ANSSI niveau M — sysctl adapté à Docker</span>
-        <span class="step-time">35 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <p class="desc">Le socle est identique à tout serveur, avec une adaptation clé : <strong>ip_forward = 1</strong> est obligatoire pour Docker. Les services inutiles sont désactivés sans toucher nginx ni docker.</p>
+        <!-- Socle ANSSI -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-m">M · Socle</span>
+            <span class="step-title">Socle ANSSI niveau M — sysctl adapté à Docker</span>
+            <span class="step-time">35 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <p class="desc">Le socle est identique à tout serveur, avec une adaptation clé : <strong>ip_forward =
+                1</strong> est obligatoire pour Docker. Les services inutiles sont désactivés sans toucher nginx ni
+              docker.</p>
 
-        <div class="section-h">MàJ et services</div>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Mises à jour + désactiver les services inutiles</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo apt update</span> && <span class="cm">sudo apt upgrade -y</span>
+            <div class="section-h">MàJ et services</div>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Mises à jour + désactiver les services inutiles</span><button
+                  class="cp-btn" onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo apt update</span> && <span class="cm">sudo apt upgrade -y</span>
 
 <span class="cc"># Désactiver — ne PAS toucher nginx et docker</span>
 <span class="cm">sudo systemctl disable --now avahi-daemon cups bluetooth ModemManager rpcbind</span>
 
 <span class="cc"># Vérifier que nginx et docker sont actifs</span>
 <span class="cm">systemctl is-active nginx docker</span></pre>
-        </div>
+            </div>
 
-        <div class="section-h">sysctl — /etc/sysctl.d/99-hardening.conf</div>
-        <div class="callout warn">
-          <span class="icon">⚠</span>
-          <span><strong>ip_forward = 1 est obligatoire pour Docker.</strong> Docker en a besoin pour son NAT interne. UFW protège l'exposition externe. Contrairement au cas serveur générique ANSSI où on le désactive.</span>
-        </div>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">/etc/sysctl.d/99-hardening.conf</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo tee /etc/sysctl.d/99-hardening.conf</span> << <span class="cs">'EOF'</span>
+            <div class="section-h">sysctl — /etc/sysctl.d/99-hardening.conf</div>
+            <div class="callout warn">
+              <span class="icon">⚠</span>
+              <span><strong>ip_forward = 1 est obligatoire pour Docker.</strong> Docker en a besoin pour son NAT
+                interne. UFW protège l'exposition externe. Contrairement au cas serveur générique ANSSI où on le
+                désactive.</span>
+            </div>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">/etc/sysctl.d/99-hardening.conf</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo tee /etc/sysctl.d/99-hardening.conf</span> << <span class="cs">'EOF'</span>
 <span class="cc">## Mémoire & noyau</span>
 <span class="ck">kernel.randomize_va_space</span> = <span class="cv">2</span>
 <span class="ck">kernel.kptr_restrict</span>      = <span class="cv">2</span>
@@ -1241,35 +1599,38 @@ pre.code {
 <span class="ck">net.ipv6.conf.default.disable_ipv6</span> = <span class="cv">1</span>
 EOF
 <span class="cm">sudo sysctl --system</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>Services inutiles désactivés</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>ip_forward = 1 vérifié</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>randomize_va_space = 2 vérifié</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>sysctl --system sans erreur</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>Services inutiles désactivés</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>ip_forward = 1 vérifié</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>randomize_va_space = 2 vérifié</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>sysctl --system sans erreur</label></li>
-        </ul>
-      </div>
-    </div>
+        <!-- UFW -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-m">M · Pare-feu</span>
+            <span class="step-title">UFW — règles adaptées Docker, éviter le bypass iptables (R44, R80)</span>
+            <span class="step-time">20 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <div class="callout danger">
+              <span class="icon">🚫</span>
+              <span><strong>Docker bypass UFW par défaut.</strong> Publier un port avec <code>-p 3000:3000</code>
+                l'expose sur Internet même si UFW bloque 3000. La solution : toujours lier sur
+                <code>127.0.0.1:3000:3000</code> dans docker-compose.</span>
+            </div>
 
-    <!-- UFW -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-m">M · Pare-feu</span>
-        <span class="step-title">UFW — règles adaptées Docker, éviter le bypass iptables (R44, R80)</span>
-        <span class="step-time">20 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="callout danger">
-          <span class="icon">🚫</span>
-          <span><strong>Docker bypass UFW par défaut.</strong> Publier un port avec <code>-p 3000:3000</code> l'expose sur Internet même si UFW bloque 3000. La solution : toujours lier sur <code>127.0.0.1:3000:3000</code> dans docker-compose.</span>
-        </div>
-
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Configuration UFW complète</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo apt install ufw</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Configuration UFW complète</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo apt install ufw</span>
 <span class="cm">sudo ufw default deny incoming</span>
 <span class="cm">sudo ufw default allow outgoing</span>
 
@@ -1285,29 +1646,32 @@ EOF
 
 <span class="cc"># Le port 3000 ne doit PAS apparaître</span>
 <span class="cm">sudo ufw status | grep 3000</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>UFW actif — default deny incoming</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Seuls 22, 80, 443 ouverts</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>docker-compose utilise 127.0.0.1:3000:3000</label>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>UFW actif — default deny incoming</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Seuls 22, 80, 443 ouverts</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>docker-compose utilise 127.0.0.1:3000:3000</label></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Docker install -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-dk">Docker · R59</span>
-        <span class="step-title">Docker — installation depuis le dépôt officiel</span>
-        <span class="step-time">25 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Installation Docker officielle — Debian/Ubuntu</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo apt install ca-certificates curl gnupg</span>
+        <!-- Docker install -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-dk">Docker · R59</span>
+            <span class="step-title">Docker — installation depuis le dépôt officiel</span>
+            <span class="step-time">25 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Installation Docker officielle — Debian/Ubuntu</span><button
+                  class="cp-btn" onclick="cp(this)">Copier</button></div>
+              <pre
+                class="code"><span class="cm">sudo apt install ca-certificates curl gnupg</span>
 <span class="cm">sudo install -m 0755 -d /etc/apt/keyrings</span>
 <span class="cm">curl -fsSL https://download.docker.com/linux/debian/gpg</span> | \
   <span class="cm">sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg</span>
@@ -1319,45 +1683,52 @@ echo <span class="cs">"deb [arch=$(dpkg --print-architecture) \
   <span class="cm">sudo tee /etc/apt/sources.list.d/docker.list</span>
 
 <span class="cm">sudo apt update && sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin</span></pre>
-        </div>
+            </div>
 
-        <div class="callout danger">
-          <span class="icon">🚫</span>
-          <span><strong>Ne jamais monter /var/run/docker.sock dans un container.</strong> Cela donne un accès root complet à l'hôte. Un container compromis peut créer d'autres containers privilégiés et s'échapper vers l'hôte.</span>
-        </div>
+            <div class="callout danger">
+              <span class="icon">🚫</span>
+              <span><strong>Ne jamais monter /var/run/docker.sock dans un container.</strong> Cela donne un accès root
+                complet à l'hôte. Un container compromis peut créer d'autres containers privilégiés et s'échapper vers
+                l'hôte.</span>
+            </div>
 
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Restreindre le groupe docker (R35)</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cc"># N'ajouter QUE les comptes de déploiement — pas les comptes standard</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Restreindre le groupe docker (R35)</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cc"># N'ajouter QUE les comptes de déploiement — pas les comptes standard</span>
 <span class="cc"># ⚠ groupe docker = privilèges quasi-root sur l'hôte</span>
 <span class="cm">sudo usermod -aG docker deployer</span>
 
 <span class="cc"># Vérifier les permissions socket</span>
 <span class="cm">ls -la /var/run/docker.sock</span>
 <span class="cc"># Attendu : srw-rw---- root docker</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>Docker installé depuis le dépôt officiel Docker
+                  Inc.</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Groupe docker restreint aux comptes de
+                  déploiement</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>/var/run/docker.sock — srw-rw----
+                  root:docker</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>Docker installé depuis le dépôt officiel Docker Inc.</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Groupe docker restreint aux comptes de déploiement</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>/var/run/docker.sock — srw-rw---- root:docker</label></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Docker daemon -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-dk">Docker · R66</span>
-        <span class="step-title">Docker daemon.json — user namespace, journald, no-new-privileges</span>
-        <span class="step-time">25 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="cw">
-          <div class="cb"><span class="cb-label">/etc/docker/daemon.json</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code">{
+        <!-- Docker daemon -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-dk">Docker · R66</span>
+            <span class="step-title">Docker daemon.json — user namespace, journald, no-new-privileges</span>
+            <span class="step-time">25 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <div class="cw">
+              <div class="cb"><span class="cb-label">/etc/docker/daemon.json</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code">{
   <span class="cc">// User namespace : root dans le container = UID non-privilégié sur l'hôte</span>
   <span class="ck">"userns-remap"</span>: <span class="cv">"default"</span>,
 
@@ -1375,50 +1746,55 @@ echo <span class="cs">"deb [arch=$(dpkg --print-architecture) \
   <span class="cc">// Maintenir les containers au redémarrage du daemon</span>
   <span class="ck">"live-restore"</span>: <span class="cv">true</span>
 }</pre>
-        </div>
+            </div>
 
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Appliquer et vérifier</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo systemctl restart docker</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Appliquer et vérifier</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo systemctl restart docker</span>
 <span class="cm">docker info | grep -E "Userns|Logging"</span>
 <span class="cm">cat /etc/subuid | grep dockremap</span>
 <span class="cc"># Attendu : dockremap:100000:65536</span></pre>
+            </div>
+
+            <div class="callout docker">
+              <span class="icon">🐳</span>
+              <span><strong>userns-remap "default" :</strong> Le UID 0 dans le container est mappé sur UID 100000 de
+                l'hôte (non-privilégié). Si le container s'échappe, le processus n'a aucun droit réel sur l'hôte.</span>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>daemon.json créé et docker redémarré</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>docker info confirme userns-remap actif</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>/etc/subuid contient une entrée dockremap</label>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div class="callout docker">
-          <span class="icon">🐳</span>
-          <span><strong>userns-remap "default" :</strong> Le UID 0 dans le container est mappé sur UID 100000 de l'hôte (non-privilégié). Si le container s'échappe, le processus n'a aucun droit réel sur l'hôte.</span>
-        </div>
+      </div><!-- /s1 -->
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>daemon.json créé et docker redémarré</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>docker info confirme userns-remap actif</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>/etc/subuid contient une entrée dockremap</label></li>
-        </ul>
-      </div>
-    </div>
+      <!-- ──── SÉANCE 2 ──── -->
+      <div id="tab-s2" class="tc">
 
-  </div><!-- /s1 -->
+        <!-- Nginx hardening -->
+        <div class="step open">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-ng">Nginx · R63–R65</span>
+            <span class="step-title">Nginx — configuration sécurisée, masquage version, sandboxing systemd</span>
+            <span class="step-time">30 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <p class="desc">Nginx est le seul service exposé à Internet. Chaque fonctionnalité inutile est désactivée.
+              Le processus est sandboxé par systemd (R65) sous le compte www-data (R35).</p>
 
-  <!-- ──── SÉANCE 2 ──── -->
-  <div id="tab-s2" class="tc">
-
-    <!-- Nginx hardening -->
-    <div class="step open">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-ng">Nginx · R63–R65</span>
-        <span class="step-title">Nginx — configuration sécurisée, masquage version, sandboxing systemd</span>
-        <span class="step-time">30 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <p class="desc">Nginx est le seul service exposé à Internet. Chaque fonctionnalité inutile est désactivée. Le processus est sandboxé par systemd (R65) sous le compte www-data (R35).</p>
-
-        <div class="section-h">Compte de service et nginx.conf global</div>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Compte www-data + nginx.conf sécurisé</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cc"># Désactiver le compte www-data pour les connexions (R34)</span>
+            <div class="section-h">Compte de service et nginx.conf global</div>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Compte www-data + nginx.conf sécurisé</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cc"># Désactiver le compte www-data pour les connexions (R34)</span>
 <span class="cm">sudo usermod -s /bin/false -L www-data</span>
 
 <span class="cc"># /etc/nginx/nginx.conf — options globales de sécurité</span>
@@ -1440,12 +1816,13 @@ http {
   <span class="cc"># Rate limiting global</span>
   <span class="ck">limit_req_zone</span> $binary_remote_addr zone=global:10m rate=<span class="cv">30r/s</span>;
 }</pre>
-        </div>
+            </div>
 
-        <div class="section-h">Sandboxing systemd (R65)</div>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">/etc/systemd/system/nginx.service.d/hardening.conf</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo mkdir -p /etc/systemd/system/nginx.service.d/</span>
+            <div class="section-h">Sandboxing systemd (R65)</div>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">/etc/systemd/system/nginx.service.d/hardening.conf</span><button
+                  class="cp-btn" onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo mkdir -p /etc/systemd/system/nginx.service.d/</span>
 <span class="cm">sudo tee /etc/systemd/system/nginx.service.d/hardening.conf</span> << <span class="cs">'EOF'</span>
 [Service]
 <span class="ck">NoNewPrivileges</span>=<span class="cv">yes</span>
@@ -1459,39 +1836,42 @@ http {
 EOF
 <span class="cm">sudo systemctl daemon-reload && sudo systemctl restart nginx</span>
 <span class="cm">systemd-analyze security nginx</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>nginx tourne sous www-data</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>server_tokens off : curl -I ne révèle pas la
+                  version</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Sandboxing systemd actif</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>nginx tourne sous www-data</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>server_tokens off : curl -I ne révèle pas la version</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Sandboxing systemd actif</label></li>
-        </ul>
-      </div>
-    </div>
+        <!-- Nginx reverse proxy + TLS -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-ng">Nginx · R79</span>
+            <span class="step-title">Nginx — reverse proxy, TLS 1.3, headers de sécurité</span>
+            <span class="step-time">25 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
 
-    <!-- Nginx reverse proxy + TLS -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-ng">Nginx · R79</span>
-        <span class="step-title">Nginx — reverse proxy, TLS 1.3, headers de sécurité</span>
-        <span class="step-time">25 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-
-        <div class="section-h">Certificat TLS (Let's Encrypt)</div>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Certbot</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo apt install certbot python3-certbot-nginx</span>
+            <div class="section-h">Certificat TLS (Let's Encrypt)</div>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Certbot</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo apt install certbot python3-certbot-nginx</span>
 <span class="cm">sudo certbot --nginx -d mondomaine.fr</span>
 <span class="cm">sudo certbot renew --dry-run</span></pre>
-        </div>
+            </div>
 
-        <div class="section-h">/etc/nginx/sites-available/app.conf</div>
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Vhost complet reverse proxy sécurisé</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code">server {
+            <div class="section-h">/etc/nginx/sites-available/app.conf</div>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Vhost complet reverse proxy sécurisé</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code">server {
   listen 80;
   server_name mondomaine.fr;
   <span class="ck">return</span> <span class="cv">301</span> https://$host$request_uri;
@@ -1536,40 +1916,44 @@ server {
   access_log /var/log/nginx/app_access.log;
   error_log  /var/log/nginx/app_error.log warn;
 }</pre>
-        </div>
+            </div>
 
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Activer et tester</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo ln -s /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Activer et tester</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo ln -s /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/</span>
 <span class="cm">sudo nginx -t</span>
 <span class="cm">sudo systemctl reload nginx</span>
 <span class="cm">curl -sI https://mondomaine.fr | grep -E "Strict|X-Frame|Content-Security"</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>HTTPS actif — HTTP redirige vers HTTPS</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Headers HSTS, X-Frame-Options, CSP présents</label>
+              </li>
+              <li><input type="checkbox" onchange="ci(this)"><label>nginx -t sans erreur</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>curl -I ne révèle pas la version nginx</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>HTTPS actif — HTTP redirige vers HTTPS</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Headers HSTS, X-Frame-Options, CSP présents</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>nginx -t sans erreur</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>curl -I ne révèle pas la version nginx</label></li>
-        </ul>
-      </div>
-    </div>
+        <!-- Dockerfile -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-app">App · R64–R66</span>
+            <span class="step-title">Dockerfile sécurisé — non-root, multi-stage, Alpine</span>
+            <span class="step-time">25 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <p class="desc">Le container applicatif applique le principe de moindre privilège : utilisateur non-root,
+              filesystem read-only, image minimale Alpine, pas d'outils de build dans l'image finale.</p>
 
-    <!-- Dockerfile -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-app">App · R64–R66</span>
-        <span class="step-title">Dockerfile sécurisé — non-root, multi-stage, Alpine</span>
-        <span class="step-time">25 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <p class="desc">Le container applicatif applique le principe de moindre privilège : utilisateur non-root, filesystem read-only, image minimale Alpine, pas d'outils de build dans l'image finale.</p>
-
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Dockerfile — Multi-stage build (exemple Node.js)</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cc"># Étape 1 : Build</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Dockerfile — Multi-stage build (exemple Node.js)</span><button
+                  class="cp-btn" onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cc"># Étape 1 : Build</span>
 FROM node:20-alpine <span class="ck">AS</span> builder
 WORKDIR /app
 COPY package*.json ./
@@ -1599,38 +1983,41 @@ HEALTHCHECK --interval=30s --timeout=3s \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
 CMD ["node", "dist/server.js"]</pre>
-        </div>
+            </div>
 
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Vérifications post-build</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">docker build -t monapp:latest .</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Vérifications post-build</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">docker build -t monapp:latest .</span>
 <span class="cm">docker run --rm monapp:latest whoami</span>   <span class="cc"># → appuser</span>
 <span class="cc"># Scanner les vulnérabilités (trivy)</span>
 <span class="cm">trivy image monapp:latest</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>Image Alpine — outils de build absents</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>docker run whoami → "appuser" (pas root)</label>
+              </li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Healthcheck configuré</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>Image Alpine — outils de build absents</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>docker run whoami → "appuser" (pas root)</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Healthcheck configuré</label></li>
-        </ul>
-      </div>
-    </div>
+        <!-- docker-compose -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-dk">Docker · R65–R78</span>
+            <span class="step-title">docker-compose — isolation réseau, read-only, cap_drop ALL, limites</span>
+            <span class="step-time">20 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
 
-    <!-- docker-compose -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-dk">Docker · R65–R78</span>
-        <span class="step-title">docker-compose — isolation réseau, read-only, cap_drop ALL, limites</span>
-        <span class="step-time">20 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-
-        <div class="cw">
-          <div class="cb"><span class="cb-label">docker-compose.yml — production sécurisée</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code">services:
+            <div class="cw">
+              <div class="cb"><span class="cb-label">docker-compose.yml — production sécurisée</span><button
+                  class="cp-btn" onclick="cp(this)">Copier</button></div>
+              <pre class="code">services:
   app:
     image: monapp:latest
     container_name: app
@@ -1676,41 +2063,43 @@ networks:
     driver: bridge
     driver_opts:
       com.docker.network.bridge.name: app-net</pre>
-        </div>
+            </div>
 
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Déploiement et vérifications</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">docker compose up -d</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Déploiement et vérifications</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">docker compose up -d</span>
 <span class="cm">docker exec app whoami</span>                    <span class="cc"># → appuser</span>
 <span class="cm">docker exec app touch /test</span>               <span class="cc"># → Read-only file system ✓</span>
 <span class="cm">docker exec app cat /proc/1/status | grep CapPrm</span>
 <span class="cc"># → CapPrm: 0000000000000000 (aucune capability)</span>
 <span class="cm">ss -tlnp | grep 3000</span>                      <span class="cc"># → 127.0.0.1:3000 ✓</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>docker exec app whoami → appuser</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Filesystem read-only — touch échoue</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>CapPrm = 0000000000000000</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Port 3000 lié sur 127.0.0.1 uniquement</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>docker exec app whoami → appuser</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Filesystem read-only — touch échoue</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>CapPrm = 0000000000000000</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Port 3000 lié sur 127.0.0.1 uniquement</label></li>
-        </ul>
-      </div>
-    </div>
+        <!-- Journalisation -->
+        <div class="step">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-r">R · R72–R73</span>
+            <span class="step-title">Journalisation — auditd adapté nginx et Docker</span>
+            <span class="step-time">25 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
 
-    <!-- Journalisation -->
-    <div class="step">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-r">R · R72–R73</span>
-        <span class="step-title">Journalisation — auditd adapté nginx et Docker</span>
-        <span class="step-time">25 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-
-        <div class="cw">
-          <div class="cb"><span class="cb-label">/etc/audit/rules.d/99-nginx-docker.rules</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cc"># Modifications config nginx</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">/etc/audit/rules.d/99-nginx-docker.rules</span><button
+                  class="cp-btn" onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cc"># Modifications config nginx</span>
 <span class="cf">-w /etc/nginx/ -p wa -k nginx_config</span>
 
 <span class="cc"># Modifications config Docker</span>
@@ -1722,202 +2111,214 @@ networks:
 <span class="cf">-w /var/log/auth.log -p wa -k auth_log</span>
 
 <span class="cf">-e 2</span></pre>
-        </div>
+            </div>
 
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Appliquer et consulter</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo augenrules --load</span>
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Appliquer et consulter</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo augenrules --load</span>
 <span class="cm">sudo journalctl -u nginx -f</span>
 <span class="cm">sudo journalctl -t app-container -f</span>
 <span class="cm">sudo ausearch -k docker_socket -ts today</span></pre>
+            </div>
+
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>Règles auditd nginx/docker chargées (auditctl -s =
+                  enabled 2)</label></li>
+              <li><input type="checkbox" onchange="ci(this)"><label>journalctl -u nginx retourne des entrées</label>
+              </li>
+              <li><input type="checkbox" onchange="ci(this)"><label>journalctl -t app-container retourne des
+                  entrées</label></li>
+            </ul>
+          </div>
         </div>
 
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>Règles auditd nginx/docker chargées (auditctl -s = enabled 2)</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>journalctl -u nginx retourne des entrées</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>journalctl -t app-container retourne des entrées</label></li>
-        </ul>
-      </div>
-    </div>
+      </div><!-- /s2 -->
 
-  </div><!-- /s2 -->
+      <!-- ──── VÉRIFICATION ──── -->
+      <div id="tab-verif" class="tc">
+        <div style="margin-bottom:28px">
+          <h2
+            style="font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:8px;color:var(--grey-900)">
+            Vérification finale</h2>
+          <p style="color:var(--grey-500);font-size:13px">Relancer Lynis, puis vérifier chaque couche par les commandes
+            ci-dessous.</p>
+        </div>
 
-  <!-- ──── VÉRIFICATION ──── -->
-  <div id="tab-verif" class="tc">
-    <div style="margin-bottom:28px">
-      <h2 style="font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:8px;color:var(--grey-900)">Vérification finale</h2>
-      <p style="color:var(--grey-500);font-size:13px">Relancer Lynis, puis vérifier chaque couche par les commandes ci-dessous.</p>
-    </div>
-
-    <div class="step open">
-      <div class="step-hdr" onclick="tog(this)">
-        <div class="step-cb" onclick="cbk(event,this)"></div>
-        <span class="step-badge b-step">Étape 4</span>
-        <span class="step-title">Relancer Lynis — mesurer l'amélioration</span>
-        <span class="step-time">20 min</span>
-        <span class="step-chev">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="cw">
-          <div class="cb"><span class="cb-label">Audit final</span><button class="cp-btn" onclick="cp(this)">Copier</button></div>
-<pre class="code"><span class="cm">sudo lynis audit system</span>
+        <div class="step open">
+          <div class="step-hdr" onclick="tog(this)">
+            <div class="step-cb" onclick="cbk(event,this)"></div>
+            <span class="step-badge b-step">Étape 4</span>
+            <span class="step-title">Relancer Lynis — mesurer l'amélioration</span>
+            <span class="step-time">20 min</span>
+            <span class="step-chev">▾</span>
+          </div>
+          <div class="step-body">
+            <div class="cw">
+              <div class="cb"><span class="cb-label">Audit final</span><button class="cp-btn"
+                  onclick="cp(this)">Copier</button></div>
+              <pre class="code"><span class="cm">sudo lynis audit system</span>
 <span class="cm">grep "hardening_index" /var/log/lynis-report.dat</span>
 <span class="cc"># Score attendu : 78–85 (vs 50–60 initialement)</span></pre>
+            </div>
+            <ul class="cl">
+              <li><input type="checkbox" onchange="ci(this)"><label>Score final noté et comparé au score initial</label>
+              </li>
+              <li><input type="checkbox" onchange="ci(this)"><label>Suggestions restantes priorisées</label></li>
+            </ul>
+          </div>
         </div>
-        <ul class="cl">
-          <li><input type="checkbox" onchange="ci(this)"><label>Score final noté et comparé au score initial</label></li>
-          <li><input type="checkbox" onchange="ci(this)"><label>Suggestions restantes priorisées</label></li>
-        </ul>
-      </div>
-    </div>
 
-    <div class="divider"><span class="divider-label">Checklist de vérification par couche</span></div>
+        <div class="divider"><span class="divider-label">Checklist de vérification par couche</span></div>
 
-    <div class="verif-grid">
+        <div class="verif-grid">
 
-      <div class="verif-card">
-        <div class="verif-card-layer" style="color:var(--c-ufw)">🔥 UFW</div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Règles actives</span>
-          <code class="verif-cmd">ufw status verbose</code>
+          <div class="verif-card">
+            <div class="verif-card-layer" style="color:var(--c-ufw)">🔥 UFW</div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Règles actives</span>
+              <code class="verif-cmd">ufw status verbose</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Port 3000 fermé</span>
+              <code class="verif-cmd">nmap -p 3000 localhost</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">SSH seul depuis admin</span>
+              <code class="verif-cmd">ufw status | grep 22</code>
+            </div>
+          </div>
+
+          <div class="verif-card">
+            <div class="verif-card-layer" style="color:var(--c-nginx)">⚙ Nginx</div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Version masquée</span>
+              <code class="verif-cmd">curl -sI https://… | grep server</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">HSTS actif</span>
+              <code class="verif-cmd">curl -sI https://… | grep Strict</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Compte www-data</span>
+              <code class="verif-cmd">ps aux | grep nginx</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">TLS 1.2/1.3 seulement</span>
+              <code class="verif-cmd">nmap --script ssl-enum-ciphers</code>
+            </div>
+          </div>
+
+          <div class="verif-card">
+            <div class="verif-card-layer" style="color:var(--c-docker)">🐳 Docker</div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">User namespace actif</span>
+              <code class="verif-cmd">docker info | grep Userns</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Socket protégée</span>
+              <code class="verif-cmd">ls -la /var/run/docker.sock</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Journalisation journald</span>
+              <code class="verif-cmd">journalctl -t docker</code>
+            </div>
+          </div>
+
+          <div class="verif-card">
+            <div class="verif-card-layer" style="color:var(--c-app)">📦 Container</div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Utilisateur non-root</span>
+              <code class="verif-cmd">docker exec app whoami</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Filesystem read-only</span>
+              <code class="verif-cmd">docker exec app touch /test</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Aucune capability</span>
+              <code class="verif-cmd">… cat /proc/1/status | grep Cap</code>
+            </div>
+            <div class="verif-item">
+              <span class="verif-check">✓</span>
+              <span class="verif-label">Mémoire limitée</span>
+              <code class="verif-cmd">docker stats app --no-stream</code>
+            </div>
+          </div>
+
         </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Port 3000 fermé</span>
-          <code class="verif-cmd">nmap -p 3000 localhost</code>
+
+        <div class="callout tip" style="margin-top:20px">
+          <span class="icon">🎯</span>
+          <span><strong>Prochaines étapes (niveau R/E) :</strong> Profil AppArmor dédié pour le daemon Docker, Falco
+            pour la détection d'intrusion runtime dans les containers, Trivy dans la CI/CD, rotation des secrets via
+            HashiCorp Vault ou Docker Secrets.</span>
         </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">SSH seul depuis admin</span>
-          <code class="verif-cmd">ufw status | grep 22</code>
-        </div>
-      </div>
 
-      <div class="verif-card">
-        <div class="verif-card-layer" style="color:var(--c-nginx)">⚙ Nginx</div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Version masquée</span>
-          <code class="verif-cmd">curl -sI https://… | grep server</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">HSTS actif</span>
-          <code class="verif-cmd">curl -sI https://… | grep Strict</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Compte www-data</span>
-          <code class="verif-cmd">ps aux | grep nginx</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">TLS 1.2/1.3 seulement</span>
-          <code class="verif-cmd">nmap --script ssl-enum-ciphers</code>
-        </div>
-      </div>
+      </div><!-- /verif -->
 
-      <div class="verif-card">
-        <div class="verif-card-layer" style="color:var(--c-docker)">🐳 Docker</div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">User namespace actif</span>
-          <code class="verif-cmd">docker info | grep Userns</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Socket protégée</span>
-          <code class="verif-cmd">ls -la /var/run/docker.sock</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Journalisation journald</span>
-          <code class="verif-cmd">journalctl -t docker</code>
-        </div>
-      </div>
+    </main>
+  </div>
 
-      <div class="verif-card">
-        <div class="verif-card-layer" style="color:var(--c-app)">📦 Container</div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Utilisateur non-root</span>
-          <code class="verif-cmd">docker exec app whoami</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Filesystem read-only</span>
-          <code class="verif-cmd">docker exec app touch /test</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Aucune capability</span>
-          <code class="verif-cmd">… cat /proc/1/status | grep Cap</code>
-        </div>
-        <div class="verif-item">
-          <span class="verif-check">✓</span>
-          <span class="verif-label">Mémoire limitée</span>
-          <code class="verif-cmd">docker stats app --no-stream</code>
-        </div>
-      </div>
+  <script>
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tc').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
 
-    </div>
+    function tog(hdr) { hdr.closest('.step').classList.toggle('open'); }
 
-    <div class="callout tip" style="margin-top:20px">
-      <span class="icon">🎯</span>
-      <span><strong>Prochaines étapes (niveau R/E) :</strong> Profil AppArmor dédié pour le daemon Docker, Falco pour la détection d'intrusion runtime dans les containers, Trivy dans la CI/CD, rotation des secrets via HashiCorp Vault ou Docker Secrets.</span>
-    </div>
+    function cbk(e, btn) {
+      e.stopPropagation();
+      btn.classList.toggle('done');
+      btn.textContent = btn.classList.contains('done') ? '✓' : '';
+      updateProg();
+    }
 
-  </div><!-- /verif -->
+    function ci(cb) { cb.closest('li').classList.toggle('done', cb.checked); }
 
-</main>
-</div>
+    function activateNav(el) {
+      document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+      const done = el.querySelector('.nav-indicator');
+      if (done) { done.classList.add('done'); done.textContent = '✓'; }
+      updateProg();
+    }
 
-<script>
-function switchTab(id, btn) {
-  document.querySelectorAll('.tc').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  btn.classList.add('active');
-}
+    function updateProg() {
+      const all = document.querySelectorAll('.step-cb').length;
+      const done = document.querySelectorAll('.step-cb.done').length;
+      const pct = Math.round((done / all) * 100);
+      document.getElementById('prog-fill').style.width = pct + '%';
+      document.getElementById('prog-txt').textContent = done + '/' + all;
+    }
 
-function tog(hdr) { hdr.closest('.step').classList.toggle('open'); }
+    function cp(btn) {
+      const pre = btn.closest('.cw').querySelector('pre');
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        btn.textContent = '✓ Copié';
+        btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('ok'); }, 2000);
+      });
+    }
 
-function cbk(e, btn) {
-  e.stopPropagation();
-  btn.classList.toggle('done');
-  btn.textContent = btn.classList.contains('done') ? '✓' : '';
-  updateProg();
-}
-
-function ci(cb) { cb.closest('li').classList.toggle('done', cb.checked); }
-
-function activateNav(el) {
-  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
-  const done = el.querySelector('.nav-indicator');
-  if (done) { done.classList.add('done'); done.textContent = '✓'; }
-  updateProg();
-}
-
-function updateProg() {
-  const all = document.querySelectorAll('.step-cb').length;
-  const done = document.querySelectorAll('.step-cb.done').length;
-  const pct = Math.round((done / all) * 100);
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-txt').textContent = done + '/' + all;
-}
-
-function cp(btn) {
-  const pre = btn.closest('.cw').querySelector('pre');
-  navigator.clipboard.writeText(pre.innerText).then(() => {
-    btn.textContent = '✓ Copié';
-    btn.classList.add('ok');
-    setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('ok'); }, 2000);
-  });
-}
-
-updateProg();
-</script>
+    updateProg();
+  </script>
 </body>
+
 </html>
